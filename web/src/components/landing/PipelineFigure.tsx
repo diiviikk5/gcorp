@@ -12,10 +12,10 @@ export const PIPE = [
   { id: "decide", label: "DECIDE", file: "brief.md" },
 ];
 
-const W = 74, D = 74, GAP = 46;
+const W = 92, D = 92, GAP = 34;
 
 export function PipelineFigure({ active, onPick }: { active: number; onPick?: (i: number) => void }) {
-  const K = useMemo(() => frame([[0, -10, 0], [PIPE.length * (W + GAP), -10, 0], [0, D + 30, 0], [PIPE.length * (W + GAP), D + 30, 0], [0, 0, 90]], 0.04, 2.6), []);
+  const K = useMemo(() => frame([[0, -10, 0], [PIPE.length * (W + GAP), -10, 0], [0, D + 30, 0], [PIPE.length * (W + GAP), D + 30, 0], [0, 0, 90]], 0.03, 2.1), []);
   const ref = useRef<SVGSVGElement>(null);
   const [, force] = useState(0);
 
