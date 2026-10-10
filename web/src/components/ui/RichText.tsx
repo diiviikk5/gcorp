@@ -3,10 +3,10 @@ import { cn } from "@/lib/cn";
 import { useUi } from "@/store/ui";
 
 const tones = {
-  ledger: "text-fg decoration-white/35",
-  sim: "text-fg decoration-white/35",
-  param: "text-fg decoration-white/20 decoration-dashed",
-  fp: "text-mute font-mono decoration-white/20",
+  ledger: "text-fg decoration-black/35",
+  sim: "text-fg decoration-black/35",
+  param: "text-fg decoration-black/20 decoration-dashed",
+  fp: "text-mute font-mono decoration-black/20",
   missing: "text-bad decoration-bad/50",
 };
 
@@ -18,7 +18,7 @@ export function RefChip({ refId, ctx, runId, className }: { refId: string; ctx?:
     <button
       onClick={(e) => { e.stopPropagation(); open({ ref: refId, runId }); }}
       title={refId.startsWith("L-") ? `Ledger ${refId}` : refId}
-      className={cn("-mx-0.5 rounded px-0.5 font-medium tabular underline decoration-dotted underline-offset-[3px] transition-colors hover:bg-white/10 hover:decoration-white", tones[r.kind], className)}
+      className={cn("-mx-0.5 rounded px-0.5 font-medium tabular underline decoration-dotted underline-offset-[3px] transition-colors hover:bg-black/10 hover:decoration-black", tones[r.kind], className)}
     >
       {r.display}
     </button>

@@ -51,15 +51,15 @@ export interface IsoCityProps {
 interface Anim { mix: number }
 
 const PALETTE = {
-  base: new THREE.Color("#121212"),
-  lot: new THREE.Color("#1a1a1a"),
-  road: new THREE.Color("#262626"),
-  arterial: new THREE.Color("#323232"),
-  river: new THREE.Color("#14222e"),
-  park: new THREE.Color("#18241d"),
-  open: new THREE.Color("#1d1d1d"),
-  industrialLot: new THREE.Color("#1f1e1c"),
-  zone: new THREE.Color("#ffffff"),
+  base: new THREE.Color("#e9e6df"),
+  lot: new THREE.Color("#ebe8e1"),
+  road: new THREE.Color("#d9d5cc"),
+  arterial: new THREE.Color("#cdc8be"),
+  river: new THREE.Color("#c3d0d8"),
+  park: new THREE.Color("#d4dccb"),
+  open: new THREE.Color("#e3dfd7"),
+  industrialLot: new THREE.Color("#dcd6cc"),
+  zone: new THREE.Color("#ff4a1c"),
 };
 
 function cssVarColor(v: string) {
@@ -170,8 +170,8 @@ const Buildings = memo(function Buildings() {
       const oz = (rnd() - 0.5) * (0.9 - fd) * 0.8;
       m.compose(new THREE.Vector3(W(c.x) + ox, 0, W(c.z) + oz), new THREE.Quaternion(), new THREE.Vector3(fw, c.height, fd));
       ref.current.setMatrixAt(i, m);
-      if (ind) col.setHSL(0.08, 0.06, 0.34 + rnd() * 0.06);
-      else col.setHSL(0.6, 0.03, 0.52 + rnd() * 0.12 + Math.min(0.1, c.height * 0.02));
+      if (ind) col.setHSL(0.08, 0.08, 0.78 + rnd() * 0.05);
+      else col.setHSL(0.1, 0.12, 0.93 + rnd() * 0.04);
       ref.current.setColorAt(i, col);
     });
     ref.current.instanceMatrix.needsUpdate = true;
@@ -189,7 +189,7 @@ const Buildings = memo(function Buildings() {
         <meshStandardMaterial roughness={0.72} metalness={0.06} />
       </instancedMesh>
       <instancedMesh ref={chim} args={[cgeo, undefined, chimneys.length]} castShadow>
-        <meshStandardMaterial color="#6b625a" roughness={0.8} />
+        <meshStandardMaterial color="#9a948a" roughness={0.8} />
       </instancedMesh>
     </>
   );
@@ -215,7 +215,7 @@ const Trees = memo(function Trees() {
     spots.forEach(([x, z, s], i) => {
       m.compose(new THREE.Vector3(x, s * 1.1, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(rnd(), rnd(), 0)), new THREE.Vector3(s, s * 1.3, s));
       ref.current.setMatrixAt(i, m);
-      col.setHSL(0.4 + rnd() * 0.04, 0.35, 0.26 + rnd() * 0.08);
+      col.setHSL(0.27 + rnd() * 0.04, 0.18, 0.62 + rnd() * 0.08);
       ref.current.setColorAt(i, col);
     });
     ref.current.instanceMatrix.needsUpdate = true;
@@ -246,7 +246,7 @@ const River = memo(function River() {
   return (
     <instancedMesh ref={ref} args={[undefined, undefined, cells.length]}>
       <boxGeometry />
-      <meshStandardMaterial ref={mat} color="#1c3346" emissive="#0e2233" roughness={0.18} metalness={0.4} transparent opacity={0.92} />
+      <meshStandardMaterial ref={mat} color="#b9c9d3" emissive="#8ea6b4" roughness={0.18} metalness={0.4} transparent opacity={0.92} />
     </instancedMesh>
   );
 });
@@ -271,7 +271,7 @@ const Traffic = memo(function Traffic({ anim, zoneId, policyClass }: { anim: Rea
   useLayoutEffect(() => {
     const col = new THREE.Color();
     parts.forEach((p, i) => {
-      col.set(p.truck ? "#ffb347" : "#e9eef7");
+      col.set(p.truck ? "#ff4a1c" : "#2a2826");
       ref.current.setColorAt(i, col);
     });
     if (ref.current.instanceColor) ref.current.instanceColor.needsUpdate = true;
@@ -318,7 +318,7 @@ function Smog({ field, anim, showHatch, layers = 5 }: { field: CityField; anim: 
   const tex = useMemo(() => fieldTexture(N), []);
   useEffect(() => writeField(tex, field.before, field.afterLo, field.afterHi, field.unc), [tex, field]);
   const mats = useMemo(
-    () => Array.from({ length: layers }, (_, i) => makeSmogMaterial(tex, N, i, 0.5 - i * 0.07)),
+    () => Array.from({ length: layers }, (_, i) => makeSmogMaterial(tex, N, i, 0.3 - i * 0.045)),
     [tex, layers],
   );
   useEffect(() => () => mats.forEach((m) => m.dispose()), [mats]);
@@ -362,7 +362,7 @@ function ZoneOutline({ zoneId }: { zoneId: string }) {
   });
   return (
     <lineSegments geometry={geo} renderOrder={20}>
-      <lineBasicMaterial ref={mat} color="#ffffff" transparent depthTest={false} />
+      <lineBasicMaterial ref={mat} color="#ff4a1c" transparent depthTest={false} />
     </lineSegments>
   );
 }
@@ -376,7 +376,7 @@ function Stations() {
           <group key={s.id} position={[W(s.x), 0, W(s.z)]}>
             <mesh position-y={0.55}>
               <cylinderGeometry args={[0.025, 0.035, 1.1, 6]} />
-              <meshStandardMaterial color="#c9d2e0" roughness={0.4} />
+              <meshStandardMaterial color="#3a3835" roughness={0.4} />
             </mesh>
             <mesh position-y={1.15}>
               <octahedronGeometry args={[0.13, 0]} />
@@ -496,10 +496,10 @@ function Diorama() {
     <group position-y={-0.55}>
       <mesh receiveShadow>
         <boxGeometry args={[N + 0.8, 0.9, N + 0.8]} />
-        <meshStandardMaterial color="#0c0c0c" roughness={0.95} />
+        <meshStandardMaterial color="#e2ded6" roughness={0.95} />
       </mesh>
       <lineSegments geometry={edges}>
-        <lineBasicMaterial color="#ffffff" transparent opacity={0.08} />
+        <lineBasicMaterial color="#121110" transparent opacity={0.5} />
       </lineSegments>
     </group>
   );
@@ -566,7 +566,7 @@ export function IsoCity(props: IsoCityProps) {
         gl={{ antialias: true, powerPreference: "high-performance", alpha: true }}
         onCreated={({ gl }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
-          gl.toneMappingExposure = 1.05;
+          gl.toneMappingExposure = 0.95;
         }}
       >
         <OrthographicCamera makeDefault position={[34, 30, 34]} near={-100} far={300} />
@@ -587,12 +587,12 @@ export function IsoCity(props: IsoCityProps) {
         />
         <Rig mode={mode} focus={focus} follow={follow} anim={anim} showAfter={showAfter} />
 
-        <hemisphereLight args={["#e8ecf2", "#0a0a0a", 0.75]} />
-        <ambientLight intensity={0.12} />
+        <hemisphereLight args={["#ffffff", "#b8b2a8", 1.1]} />
+        <ambientLight intensity={0.35} />
         <directionalLight
           position={[-14, 26, 10]}
-          intensity={2.1}
-          color="#fff1e0"
+          intensity={1.8}
+          color="#fffaf2"
           castShadow
           shadow-mapSize={[2048, 2048]}
           shadow-camera-left={-22}
@@ -632,7 +632,7 @@ export function IsoCity(props: IsoCityProps) {
                 className={
                   "absolute left-0 top-0 whitespace-nowrap rounded-full border px-2 py-0.5 text-[10.5px] font-medium tracking-tight backdrop-blur-md transition-[background,color,border-color] will-change-transform " +
                   (onZoneClick ? "pointer-events-auto cursor-pointer " : "") +
-                  (active ? "border-white/60 bg-white/15 text-white" : "border-white/10 bg-black/50 text-white/70 hover:border-white/25 hover:text-white")
+                  (active ? "border-black/60 bg-black/15 text-fg" : "border-black/10 bg-bg/80 text-mute hover:border-black/25 hover:text-fg")
                 }
               >
                 {z.name}
@@ -643,7 +643,7 @@ export function IsoCity(props: IsoCityProps) {
           <div
             ref={(el) => { if (el) els.current.set("agent", el); else els.current.delete("agent"); }}
             style={{ opacity: 0 }}
-            className="absolute left-0 top-0 whitespace-nowrap rounded-md border border-white/15 bg-black/75 px-2 py-1 text-[11px] font-medium text-white shadow-lg backdrop-blur-md will-change-transform"
+            className="absolute left-0 top-0 whitespace-nowrap rounded-md border border-black/15 bg-bg/90 px-2 py-1 text-[11px] font-medium text-fg shadow-lg backdrop-blur-md will-change-transform"
           >
             <span className="mr-1.5 inline-block size-1.5 rounded-full align-middle" style={{ background: activeMeta.color }} />
             {activeMeta.label}

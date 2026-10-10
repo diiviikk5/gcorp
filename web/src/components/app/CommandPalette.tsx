@@ -41,7 +41,7 @@ export function CommandPalette() {
   return (
     <AnimatePresence>
       {open && (
-        <motion.div className="fixed inset-0 z-[60] flex items-start justify-center bg-black/50 pt-[14vh] backdrop-blur-[2px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpen(false)}>
+        <motion.div className="fixed inset-0 z-[60] flex items-start justify-center bg-bg/80 pt-[14vh] backdrop-blur-[2px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpen(false)}>
           <motion.div
             onClick={(e) => e.stopPropagation()}
             initial={{ scale: 0.97, y: -8, opacity: 0 }}
@@ -75,7 +75,7 @@ export function CommandPalette() {
                   <button
                     onMouseMove={() => setSel(idx)}
                     onClick={() => go(i)}
-                    className={cn("flex h-9 w-full items-center gap-3 rounded-lg px-2.5 text-left text-[13px]", sel === idx ? "bg-white/[0.07] text-fg" : "text-mute")}
+                    className={cn("flex h-9 w-full items-center gap-3 rounded-lg px-2.5 text-left text-[13px]", sel === idx ? "bg-black/[0.07] text-fg" : "text-mute")}
                   >
                     <i.icon className="size-4 shrink-0" />
                     <span className="truncate">{i.label}</span>

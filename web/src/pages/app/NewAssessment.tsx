@@ -79,7 +79,7 @@ export default function NewAssessment() {
                 <p className="mt-1.5 max-w-xl text-[14px] text-mute">Zones are ranked by today's baseline. Coverage tells you how much the sensors can back up the result; thin coverage means a wider, more honest range.</p>
                 <button
                   onClick={() => setZone("all")}
-                  className={cn("mt-6 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left ring-1 ring-inset transition-colors", zone === "all" ? "bg-white/[0.04] ring-white/40" : "ring-line hover:bg-white/[0.02]")}
+                  className={cn("mt-6 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left ring-1 ring-inset transition-colors", zone === "all" ? "bg-black/[0.04] ring-black/40" : "ring-line hover:bg-black/[0.02]")}
                 >
                   <MapPin className="size-4 text-mute" />
                   <span className="text-[13.5px] font-medium">All of Delhi</span>
@@ -91,7 +91,7 @@ export default function NewAssessment() {
                     <button
                       key={z.id}
                       onClick={() => setZone(z.id)}
-                      className={cn("group rounded-xl p-3.5 text-left ring-1 ring-inset transition-all", zone === z.id ? "bg-white/[0.04] ring-white/40" : "ring-line hover:bg-white/[0.02] hover:ring-line-2")}
+                      className={cn("group rounded-xl p-3.5 text-left ring-1 ring-inset transition-all", zone === z.id ? "bg-black/[0.04] ring-black/40" : "ring-line hover:bg-black/[0.02] hover:ring-line-2")}
                     >
                       <div className="flex items-center justify-between">
                         <div>
@@ -114,7 +114,7 @@ export default function NewAssessment() {
               <motion.div key="policy" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }}>
                 <h1 className="text-[26px] font-semibold tracking-[-0.03em]">Describe the policy in plain English</h1>
                 <p className="mt-1.5 max-w-xl text-[14px] text-mute">The compiler turns it into typed parameters. Anything you don't say is marked as an assumption, never silently guessed.</p>
-                <div className="mt-6 rounded-xl bg-s1 ring-1 ring-inset ring-line-2 focus-within:ring-white/40">
+                <div className="mt-6 rounded-xl bg-s1 ring-1 ring-inset ring-line-2 focus-within:ring-black/40">
                   <textarea
                     autoFocus
                     value={text}
@@ -132,7 +132,7 @@ export default function NewAssessment() {
                 <div className="mt-4 eyebrow">Try one</div>
                 <div className="mt-2 grid gap-2 sm:grid-cols-2">
                   {EXAMPLES.map((ex) => (
-                    <button key={ex.text} onClick={() => { setText(ex.text); const z = ZONES.find((zz) => ex.text.toLowerCase().includes(zz.name.toLowerCase())); setZone(z ? z.id : "all"); setOverrides({}); }} className="group rounded-xl p-3 text-left text-[12.5px] leading-snug text-mute ring-1 ring-inset ring-line transition-colors hover:bg-white/[0.02] hover:text-fg">
+                    <button key={ex.text} onClick={() => { setText(ex.text); const z = ZONES.find((zz) => ex.text.toLowerCase().includes(zz.name.toLowerCase())); setZone(z ? z.id : "all"); setOverrides({}); }} className="group rounded-xl p-3 text-left text-[12.5px] leading-snug text-mute ring-1 ring-inset ring-line transition-colors hover:bg-black/[0.02] hover:text-fg">
                       <Badge tone={ex.tag === "Gotcha" ? "bad" : ex.tag === "Replay" ? "violet" : "brand"} className="mb-1.5">{ex.tag}</Badge>
                       <div>{ex.text}</div>
                     </button>
@@ -171,7 +171,7 @@ export default function NewAssessment() {
                     );
                   })}
                 </div>
-                <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-xl bg-white/[0.02] p-4 text-[13px] ring-1 ring-inset ring-line">
+                <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-xl bg-black/[0.02] p-4 text-[13px] ring-1 ring-inset ring-line">
                   <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} className="mt-0.5 size-4 accent-white" />
                   <span className="text-mute">
                     I understand the output is an <span className="text-fg">estimate under stated assumptions</span>, given as a range, not a forecast. Unsourced claims will surface as open questions rather than appear in the brief.
@@ -199,7 +199,7 @@ export default function NewAssessment() {
 
         {/* Right rail: live preview */}
         <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
-          <div className="overflow-hidden rounded-2xl bg-[radial-gradient(ellipse_at_50%_40%,#151515_0%,#000_75%)] ring-1 ring-inset ring-line">
+          <div className="overflow-hidden rounded-2xl bg-[radial-gradient(ellipse_at_50%_40%,#f8f7f3_0%,#ebe8e1_75%)] ring-1 ring-inset ring-line">
             <IsoCity mode="mini" className="h-[260px]" field={field} showAfter={false} zoneId={zone} showTraffic showLabels onZoneClick={(id) => setZone(id)} />
             <div className="flex items-center justify-between border-t border-line px-4 py-2.5 text-[12px]">
               <span className="text-mute">Selected</span>
@@ -234,7 +234,7 @@ export default function NewAssessment() {
                     {scenario.warnings.map((w, i) => {
                       const Icon = w.level === "block" ? Ban : w.level === "warn" ? AlertTriangle : Info;
                       return (
-                        <div key={i} className={cn("flex gap-2 rounded-lg px-2.5 py-2 text-[11.5px] leading-snug ring-1 ring-inset", w.level === "block" ? "bg-bad/[0.06] text-bad ring-bad/20" : w.level === "warn" ? "bg-warn/[0.06] text-warn ring-warn/20" : "bg-white/[0.03] text-mute ring-line")}>
+                        <div key={i} className={cn("flex gap-2 rounded-lg px-2.5 py-2 text-[11.5px] leading-snug ring-1 ring-inset", w.level === "block" ? "bg-bad/[0.06] text-bad ring-bad/20" : w.level === "warn" ? "bg-warn/[0.06] text-warn ring-warn/20" : "bg-black/[0.03] text-mute ring-line")}>
                           <Icon className="mt-px size-3.5 shrink-0" />
                           <span>{w.text}</span>
                         </div>

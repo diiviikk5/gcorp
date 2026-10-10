@@ -4,8 +4,8 @@ import { cn } from "@/lib/cn";
 export function AqiPill({ value, className, showLabel = true }: { value: number; className?: string; showLabel?: boolean }) {
   const b = aqiBand(value);
   return (
-    <span className={cn("inline-flex h-5 items-center gap-1.5 rounded-md bg-white/[0.04] px-1.5 text-[11px] font-medium tabular ring-1 ring-inset ring-white/10", className)}>
-      <span className="size-1.5 rounded-full" style={{ background: b.color, boxShadow: `0 0 8px ${b.color}` }} />
+    <span className={cn("inline-flex h-5 items-center gap-1.5 rounded-md bg-black/[0.04] px-1.5 text-[11px] font-medium tabular ring-1 ring-inset ring-black/10", className)}>
+      <span className="size-1.5 rounded-full" style={{ background: b.color }} />
       <span className="text-fg">{fmt(value)}</span>
       {showLabel && <span className="text-mute">{b.label}</span>}
     </span>
@@ -45,10 +45,10 @@ export function RangeBar({ before, lo, hi, min = 0, max = 500, className }: { be
   const pct = (v: number) => Math.max(0, Math.min(100, ((v - min) / (max - min)) * 100));
   return (
     <div className={cn("relative h-6", className)}>
-      <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-white/10" />
+      <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-black/10" />
       <div className="hatch absolute top-1/2 h-3 -translate-y-1/2 rounded-sm bg-ok/20 ring-1 ring-inset ring-ok/50" style={{ left: `${pct(lo)}%`, width: `${Math.max(0.8, pct(hi) - pct(lo))}%` }} />
-      <div className="absolute top-1/2 h-px -translate-y-1/2 bg-[linear-gradient(90deg,transparent,rgb(255_255_255/0.35))]" style={{ left: `${pct(hi)}%`, width: `${Math.max(0, pct(before) - pct(hi))}%` }} />
-      <div className="absolute top-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-bg bg-fg ring-1 ring-white/30" style={{ left: `${pct(before)}%` }} />
+      <div className="absolute top-1/2 h-px -translate-y-1/2 bg-[linear-gradient(90deg,transparent,rgb(18_17_16/0.3))]" style={{ left: `${pct(hi)}%`, width: `${Math.max(0, pct(before) - pct(hi))}%` }} />
+      <div className="absolute top-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-bg bg-fg ring-1 ring-black/30" style={{ left: `${pct(before)}%` }} />
     </div>
   );
 }

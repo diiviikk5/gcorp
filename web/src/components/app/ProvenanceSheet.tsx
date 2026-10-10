@@ -148,7 +148,7 @@ export function ProvenanceSheet() {
           <div className="mt-6 eyebrow">Cited in this run</div>
           <div className="mt-2 space-y-2">
             {citedBy.map((c) => (
-              <div key={c.id} className="rounded-lg bg-white/[0.03] p-3 text-[12.5px] leading-relaxed ring-1 ring-inset ring-line">
+              <div key={c.id} className="rounded-lg bg-black/[0.03] p-3 text-[12.5px] leading-relaxed ring-1 ring-inset ring-line">
                 <div className="mb-1 flex items-center gap-2">
                   <span className="size-1.5 rounded-full" style={{ background: AGENTS[c.agent].color }} />
                   <span className="font-medium">{AGENTS[c.agent].name}</span>
@@ -167,7 +167,7 @@ export function ProvenanceSheet() {
     <AnimatePresence>
       {target && (
         <>
-          <motion.div className="fixed inset-0 z-40 bg-black/40" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={close} />
+          <motion.div className="fixed inset-0 z-40 bg-black/15" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={close} />
           <motion.aside
             className="fixed inset-y-2 right-2 z-50 flex w-[420px] max-w-[calc(100vw-16px)] flex-col overflow-hidden rounded-2xl border border-line-2 bg-s1/95 shadow-2xl backdrop-blur-xl"
             initial={{ x: 40, opacity: 0 }}
@@ -180,7 +180,7 @@ export function ProvenanceSheet() {
                 <Icon className="size-4 text-brand" />
                 {title}
               </div>
-              <button onClick={close} className="rounded-md p-1 text-mute hover:bg-white/5 hover:text-fg" aria-label="Close">
+              <button onClick={close} className="rounded-md p-1 text-mute hover:bg-black/5 hover:text-fg" aria-label="Close">
                 <X className="size-4" />
               </button>
             </div>

@@ -17,7 +17,7 @@ export default function Ledger() {
       <PageHeader
         title="Source ledger"
         actions={
-          <label className="flex h-7 items-center gap-2 rounded-md px-2 text-[12.5px] ring-1 ring-inset ring-line focus-within:ring-white/30">
+          <label className="flex h-7 items-center gap-2 rounded-md px-2 text-[12.5px] ring-1 ring-inset ring-line focus-within:ring-black/30">
             <Search className="size-3.5 text-faint" />
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Filter rows" className="w-40 bg-transparent outline-none placeholder:text-faint" />
           </label>
@@ -38,7 +38,7 @@ export default function Ledger() {
           </thead>
           <tbody className="divide-y divide-line">
             {rows.map((r) => (
-              <tr key={r.id} onClick={() => open({ ref: r.id })} className="cursor-pointer transition-colors hover:bg-white/[0.02]">
+              <tr key={r.id} onClick={() => open({ ref: r.id })} className="cursor-pointer transition-colors hover:bg-black/[0.02]">
                 <td className="py-3 font-mono text-[11.5px] text-mute">{r.id}</td>
                 <td className="py-3">
                   <div>{r.label}</div>

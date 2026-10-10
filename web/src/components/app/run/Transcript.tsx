@@ -18,7 +18,7 @@ export function AgentAvatar({ id, active, size = 28 }: { id: AgentId; active?: b
   return (
     <span
       className={cn("relative grid shrink-0 place-items-center rounded-full font-mono text-[10px] font-semibold transition-all", active ? "scale-105" : "")}
-      style={{ width: size, height: size, color: active ? "#000" : "var(--color-mute)", background: active ? "var(--color-fg)" : "transparent", boxShadow: "inset 0 0 0 1px var(--color-line-2)" }}
+      style={{ width: size, height: size, color: active ? "var(--color-bg)" : "var(--color-mute)", background: active ? "var(--color-fg)" : "transparent", boxShadow: "inset 0 0 0 1px var(--color-line-2)" }}
       title={`${a.name} · ${a.model}`}
     >
       {a.short}
@@ -120,7 +120,7 @@ export function Transcript({ events, claims, ctx, runId, activeAgent, complete }
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-                className={cn("group rounded-xl px-2.5 py-2.5 transition-colors", "hover:bg-white/[0.02]")}
+                className={cn("group rounded-xl px-2.5 py-2.5 transition-colors", "hover:bg-black/[0.02]")}
               >
                 <div className="flex gap-2.5">
                   <AgentAvatar id={e.agent} size={26} />

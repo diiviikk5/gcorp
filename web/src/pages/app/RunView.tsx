@@ -103,9 +103,9 @@ export default function RunView() {
 
         <div className="ml-auto flex items-center gap-1.5">
           <div className="hidden items-center gap-1 rounded-lg p-0.5 ring-1 ring-inset ring-line sm:flex">
-            <button onClick={() => { seek(0); setPlaying(true); }} className="grid size-7 place-items-center rounded-md text-mute hover:bg-white/5 hover:text-fg" title="Replay from start"><RotateCcw className="size-3.5" /></button>
-            <button onClick={() => { if (pctDone >= 1) seek(0); setPlaying(!playing); }} className="grid size-7 place-items-center rounded-md text-fg hover:bg-white/5" title={playing ? "Pause" : "Play"}>{playing ? <Pause className="size-3.5" /> : <Play className="size-3.5" />}</button>
-            <button onClick={() => { seek(duration); setPlaying(false); }} className="grid size-7 place-items-center rounded-md text-mute hover:bg-white/5 hover:text-fg" title="Skip to end"><FastForward className="size-3.5" /></button>
+            <button onClick={() => { seek(0); setPlaying(true); }} className="grid size-7 place-items-center rounded-md text-mute hover:bg-black/5 hover:text-fg" title="Replay from start"><RotateCcw className="size-3.5" /></button>
+            <button onClick={() => { if (pctDone >= 1) seek(0); setPlaying(!playing); }} className="grid size-7 place-items-center rounded-md text-fg hover:bg-black/5" title={playing ? "Pause" : "Play"}>{playing ? <Pause className="size-3.5" /> : <Play className="size-3.5" />}</button>
+            <button onClick={() => { seek(duration); setPlaying(false); }} className="grid size-7 place-items-center rounded-md text-mute hover:bg-black/5 hover:text-fg" title="Skip to end"><FastForward className="size-3.5" /></button>
             <Segmented value={String(speed)} onChange={(v) => setSpeed(Number(v))} options={[{ value: "1", label: "1×" }, { value: "2", label: "2×" }, { value: "4", label: "4×" }]} className="!ring-0 !bg-transparent" />
           </div>
           <Button size="sm" variant="ghost" onClick={() => navigator.clipboard?.writeText(location.origin + `/app/runs/${rec.id}/brief`)} title="Copy brief link"><Share2 className="size-3.5" /></Button>
@@ -120,7 +120,7 @@ export default function RunView() {
 
       <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[1fr_380px] 2xl:grid-cols-[1fr_420px]">
         {/* Center: the city */}
-        <section className="relative min-h-[420px] overflow-hidden bg-[radial-gradient(ellipse_at_50%_40%,#141414_0%,#000_70%)]">
+        <section className="relative min-h-[420px] overflow-hidden bg-[radial-gradient(ellipse_at_50%_40%,#f8f7f3_0%,#ebe8e1_75%)]">
           <div className="grid-bg pointer-events-none absolute inset-0 opacity-60" />
           <IsoCity
             mode="app"
@@ -191,7 +191,7 @@ export default function RunView() {
                 <AqiScale />
               )}
               <span className="h-6 w-px bg-line-2" />
-              <span className="flex items-center gap-1.5 whitespace-nowrap"><span className="hatch size-3 rounded-sm ring-1 ring-white/20" /> Thin data</span>
+              <span className="flex items-center gap-1.5 whitespace-nowrap"><span className="hatch size-3 rounded-sm ring-1 ring-black/20" /> Thin data</span>
               <span className="flex items-center gap-1.5"><span className="size-2 rotate-45 bg-aqi-poor" /> Station</span>
             </div>
 
@@ -200,7 +200,7 @@ export default function RunView() {
                 const r = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
                 seek(((e.clientX - r.left) / r.width) * duration);
               }}>
-                <div className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 rounded bg-white/10" />
+                <div className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 rounded bg-black/10" />
                 <div className="absolute left-0 top-1/2 h-0.5 -translate-y-1/2 rounded bg-brand" style={{ width: `${pctDone * 100}%` }} />
                 {bundle.script.events.map((e, i) => {
                   if (e.type !== "verdict" && e.type !== "sim") return null;
@@ -217,7 +217,7 @@ export default function RunView() {
           <AnimatePresence>
             {d.complete && pctDone >= 1 && !blocked && (
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute left-1/2 top-4 -translate-x-1/2">
-                <Link to={`/app/runs/${rec.id}/brief`} className="glass flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[12px] font-medium text-fg hover:bg-white/10">
+                <Link to={`/app/runs/${rec.id}/brief`} className="glass flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[12px] font-medium text-fg hover:bg-black/10">
                   <span className="size-1.5 rounded-full bg-ok" /> Brief ready: {fmt(sim.summary.deltaLo)}–{fmt(sim.summary.deltaHi)} AQI points <ChevronRight className="size-3.5" />
                 </Link>
               </motion.div>

@@ -37,14 +37,14 @@ export function AppLayout() {
     <div className="flex h-dvh overflow-hidden bg-bg text-fg">
       <aside className="hidden w-[232px] shrink-0 flex-col border-r border-line md:flex">
         <div className="flex h-12 items-center px-3.5">
-          <NavLink to="/" className="rounded-md px-1 py-1 hover:bg-white/[0.04]"><Logo /></NavLink>
+          <NavLink to="/" className="rounded-md px-1 py-1 hover:bg-black/[0.04]"><Logo /></NavLink>
         </div>
 
         <div className="mt-2 flex gap-1.5 px-2.5">
-          <NavLink to="/app/new" className="flex h-8 flex-1 items-center gap-2 rounded-lg px-2.5 text-[13px] font-medium ring-1 ring-inset ring-white/[0.1] transition-colors hover:bg-white/[0.05]">
+          <NavLink to="/app/new" className="flex h-8 flex-1 items-center gap-2 whitespace-nowrap rounded-lg px-2.5 text-[13px] font-medium ring-1 ring-inset ring-black/[0.1] transition-colors hover:bg-black/[0.05]">
             <Plus className="size-3.5" /> New assessment <Kbd className="ml-auto">N</Kbd>
           </NavLink>
-          <button onClick={() => setPalette(true)} className="grid size-8 place-items-center rounded-lg text-mute ring-1 ring-inset ring-white/[0.08] hover:bg-white/[0.05] hover:text-fg" aria-label="Search">
+          <button onClick={() => setPalette(true)} className="grid size-8 place-items-center rounded-lg text-mute ring-1 ring-inset ring-black/[0.08] hover:bg-black/[0.05] hover:text-fg" aria-label="Search">
             <Search className="size-3.5" />
           </button>
         </div>
@@ -55,7 +55,7 @@ export function AppLayout() {
               key={n.to}
               to={n.to}
               end={n.end}
-              className={({ isActive }) => cn("flex h-8 items-center gap-2.5 rounded-md px-2 text-[13px] transition-colors", isActive ? "bg-white/[0.07] text-fg" : "text-mute hover:bg-white/[0.04] hover:text-fg")}
+              className={({ isActive }) => cn("flex h-8 items-center gap-2.5 rounded-md px-2 text-[13px] transition-colors", isActive ? "bg-black/[0.07] text-fg" : "text-mute hover:bg-black/[0.04] hover:text-fg")}
             >
               <n.icon className="size-4" strokeWidth={1.8} />
               {n.label}
@@ -69,7 +69,7 @@ export function AppLayout() {
             <NavLink
               key={r.id}
               to={`/app/runs/${r.id}`}
-              className={({ isActive }) => cn("group flex h-8 items-center gap-2 rounded-md px-2 text-[12.5px] transition-colors", isActive ? "bg-white/[0.07] text-fg" : "text-mute hover:bg-white/[0.04] hover:text-fg")}
+              className={({ isActive }) => cn("group flex h-8 items-center gap-2 rounded-md px-2 text-[12.5px] transition-colors", isActive ? "bg-black/[0.07] text-fg" : "text-mute hover:bg-black/[0.04] hover:text-fg")}
             >
               <span className="truncate">{r.scenario.title.split(" · ")[0]}</span>
               <span className="ml-auto shrink-0 text-[10.5px] text-faint">{r.scenario.title.split(" · ")[1]}</span>

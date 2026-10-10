@@ -27,7 +27,7 @@ export default function Compare() {
   const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
 
   const Bar = ({ lo, hi, max }: { lo: number; hi: number; max: number }) => (
-    <div className="relative h-1.5 rounded-full bg-white/[0.06]">
+    <div className="relative h-1.5 rounded-full bg-black/[0.06]">
       <div className="absolute inset-y-0 rounded-full bg-fg" style={{ left: `${(lo / max) * 100}%`, width: `${Math.max(1, ((hi - lo) / max) * 100)}%` }} />
     </div>
   );
@@ -41,7 +41,7 @@ export default function Compare() {
             <button
               key={r.id}
               onClick={() => toggle(r.id)}
-              className={cn("rounded-full px-3 py-1 text-[12px] ring-1 ring-inset transition-colors", picked.includes(r.id) ? "bg-fg text-black ring-fg" : "text-mute ring-line hover:text-fg")}
+              className={cn("rounded-full px-3 py-1 text-[12px] ring-1 ring-inset transition-colors", picked.includes(r.id) ? "bg-fg text-bg ring-fg" : "text-mute ring-line hover:text-fg")}
             >
               {r.scenario.title.split(" · ").slice(0, 2).join(" · ")}
             </button>

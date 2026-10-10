@@ -6,33 +6,34 @@
   --font-display: "Instrument Serif", ui-serif, Georgia, serif;
   --font-grotesk: "Archivo", "Geist", ui-sans-serif, sans-serif;
 
-  --color-bg: #000000;
-  --color-s1: #0a0a0a;
-  --color-s2: #111111;
-  --color-s3: #171717;
-  --color-s4: #1f1f1f;
-  --color-line: rgb(255 255 255 / 0.08);
-  --color-line-2: rgb(255 255 255 / 0.12);
-  --color-fg: #ededed;
-  --color-mute: #a1a1a1;
-  --color-faint: #5c5c5c;
+  --color-bg: #f2f0eb;
+  --color-s1: #ece9e2;
+  --color-s2: #e6e3db;
+  --color-s3: #dfdbd2;
+  --color-s4: #d8d4ca;
+  --color-line: rgb(18 17 16 / 0.1);
+  --color-line-2: rgb(18 17 16 / 0.18);
+  --color-fg: #121110;
+  --color-mute: #6d6a64;
+  --color-faint: #9b978f;
 
-  --color-brand: #ededed;
-  --color-brand-2: #d4d4d4;
-  --color-brand-ink: #000000;
+  --color-brand: #121110;
+  --color-brand-2: #2a2826;
+  --color-brand-ink: #f2f0eb;
+  --color-accent: #ff4a1c;
 
-  --color-ok: #ededed;
-  --color-warn: #a1a1a1;
-  --color-bad: #ff5f56;
+  --color-ok: #121110;
+  --color-warn: #6d6a64;
+  --color-bad: #e8431b;
 
-  --color-a-compiler: #ededed;
-  --color-a-simulator: #ededed;
-  --color-a-engineer: #ededed;
-  --color-a-epi: #ededed;
-  --color-a-econ: #ededed;
-  --color-a-skeptic: #ededed;
-  --color-a-verifier: #ededed;
-  --color-a-writer: #ededed;
+  --color-a-compiler: #121110;
+  --color-a-simulator: #121110;
+  --color-a-engineer: #121110;
+  --color-a-epi: #121110;
+  --color-a-econ: #121110;
+  --color-a-skeptic: #121110;
+  --color-a-verifier: #121110;
+  --color-a-writer: #121110;
 
   --color-aqi-good: #4fb26b;
   --color-aqi-sat: #a3c853;
@@ -46,7 +47,7 @@
 
 @layer base {
   html {
-    color-scheme: dark;
+    color-scheme: light;
     background: var(--color-bg);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -57,7 +58,7 @@
     font-feature-settings: "cv11", "ss01", "ss03";
   }
   ::selection {
-    background: rgb(255 255 255 / 0.2);
+    background: rgb(255 74 28 / 0.18);
   }
   :focus-visible {
     outline: 2px solid var(--color-brand);
@@ -66,7 +67,7 @@
   }
   * {
     scrollbar-width: thin;
-    scrollbar-color: rgb(255 255 255 / 0.12) transparent;
+    scrollbar-color: rgb(18 17 16 / 0.18) transparent;
   }
 }
 
@@ -85,7 +86,7 @@
     border-radius: 14px;
   }
   .glass {
-    background: rgb(0 0 0 / 0.72);
+    background: rgb(242 240 235 / 0.86);
     backdrop-filter: blur(14px) saturate(140%);
     -webkit-backdrop-filter: blur(14px) saturate(140%);
     border: 1px solid var(--color-line-2);
@@ -107,15 +108,15 @@
   }
   .grid-bg {
     background-image:
-      linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px),
-      linear-gradient(90deg, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+      linear-gradient(rgb(18 17 16 / 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(18 17 16 / 0.045) 1px, transparent 1px);
     background-size: 48px 48px;
     mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
   }
   .hatch {
     background-image: repeating-linear-gradient(
       135deg,
-      rgb(255 255 255 / 0.14) 0 2px,
+      rgb(18 17 16 / 0.22) 0 1.5px,
       transparent 2px 6px
     );
   }
@@ -129,7 +130,7 @@
   to { background-position: 200% 0; }
 }
 .shimmer {
-  background: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 0.08) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgb(18 17 16 / 0.07) 50%, transparent 100%);
   background-size: 200% 100%;
   animation: shimmer 1.6s linear infinite;
 }

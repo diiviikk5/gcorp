@@ -13,7 +13,7 @@ const Brief = lazy(() => import("./pages/app/Brief"));
 const Compare = lazy(() => import("./pages/app/Compare"));
 const Ledger = lazy(() => import("./pages/app/Ledger"));
 
-const Fallback = () => <div className="grid h-full min-h-[40vh] place-items-center"><div className="size-5 animate-spin rounded-full border-2 border-white/10 border-t-brand" /></div>;
+const Fallback = () => <div className="grid h-full min-h-[40vh] place-items-center"><div className="size-5 animate-spin rounded-full border-2 border-black/10 border-t-brand" /></div>;
 const S = (el: React.ReactNode) => <Suspense fallback={<Fallback />}>{el}</Suspense>;
 
 const router = createBrowserRouter([

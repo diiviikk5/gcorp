@@ -45,7 +45,7 @@ export default function Overview() {
               const s = b.sims[2].summary;
               const rec = recommend(b);
               return (
-                <Link key={r.id} to={`/app/runs/${r.id}`} className="group flex items-center gap-4 py-3.5 text-[13px] transition-colors hover:bg-white/[0.02]">
+                <Link key={r.id} to={`/app/runs/${r.id}`} className="group flex items-center gap-4 py-3.5 text-[13px] transition-colors hover:bg-black/[0.02]">
                   <span className="min-w-0 flex-1 truncate">{r.scenario.title}</span>
                   <span className={cn("hidden w-[150px] text-[12px] sm:block", rec.verdict === "reject" ? "text-bad" : "text-mute")}>{rec.label}</span>
                   <span className="w-[110px] text-right font-mono text-[12px] text-mute tabular">−{fmt(s.deltaLo)} to −{fmt(s.deltaHi)}</span>

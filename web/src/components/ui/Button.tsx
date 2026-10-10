@@ -9,10 +9,10 @@ const base =
   "group/btn relative inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium transition-[background,color,border-color,box-shadow,transform] duration-150 ease-out active:translate-y-px disabled:pointer-events-none disabled:opacity-40";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-fg text-black hover:bg-white",
+  primary: "bg-fg text-bg hover:bg-black",
   secondary: "bg-s2 text-fg shadow-[0_0_0_1px_var(--color-line-2)] hover:bg-s3",
-  outline: "text-fg shadow-[0_0_0_1px_var(--color-line-2)] hover:bg-white/[0.04]",
-  ghost: "text-mute hover:bg-white/[0.05] hover:text-fg",
+  outline: "text-fg shadow-[0_0_0_1px_var(--color-line-2)] hover:bg-black/[0.04]",
+  ghost: "text-mute hover:bg-black/[0.05] hover:text-fg",
   danger: "bg-bad/10 text-bad shadow-[0_0_0_1px_rgb(255_107_107/0.3)] hover:bg-bad/15",
 };
 
