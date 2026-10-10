@@ -6,6 +6,7 @@ import { IsoCity, type CityAgent } from "@/components/city/IsoCity";
 import { ScenarioCard, StageRail } from "@/components/app/run/ScenarioPanel";
 import { Transcript } from "@/components/app/run/Transcript";
 import { Chamber } from "@/components/app/run/Chamber";
+import { useWard, WardView } from "@/components/city/WardView";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Segmented } from "@/components/ui/Segmented";
@@ -29,6 +30,8 @@ export default function RunView() {
   const [view, setView] = useState<"auto" | "before" | "after">("auto");
   const [panel, setPanel] = useState<"council" | "policy">("council");
   const [stageView, setStageView] = useState<"city" | "chamber">(() => (sp.get("view") === "chamber" ? "chamber" : "city"));
+  const [mapKind, setMapKind] = useState<"grid" | "real">("grid");
+  const { ward, state: wardState } = useWard(bundle?.record.scenario.zoneId ?? null);
   const interjectRun = useRuns((s) => s.interject);
   const [question, setQuestion] = useState("");
   const [asking, setAsking] = useState(false);
@@ -129,6 +132,8 @@ export default function RunView() {
           <div className="grid-bg pointer-events-none absolute inset-0 opacity-60" />
           {stageView === "chamber" ? (
             <div className="absolute inset-0 pt-16"><Chamber events={d.events} /></div>
+          ) : mapKind === "real" && ward ? (
+            <WardView className="absolute inset-0" ward={ward} aqi={sim.summary.zoneBefore} afterAqi={(sim.summary.zoneAfterLo + sim.summary.zoneAfterHi) / 2} showAfter={showAfter} />
           ) : (
           <IsoCity
               mode="app"
@@ -189,7 +194,8 @@ export default function RunView() {
 
           {/* Layer controls */}
           <div className={cn("absolute right-4 top-4 flex flex-col items-end gap-2", stageView === "chamber" && "hidden")}>
-            <Segmented value={layer} onChange={setLayer} className="glass" options={[{ value: "haze", label: "Haze" }, { value: "tiles", label: "AQI grid" }, { value: "delta", label: "Change" }]} />
+            {wardState === "ready" && <Segmented value={mapKind} onChange={setMapKind} className="glass" options={[{ value: "grid", label: "Delhi grid" }, { value: "real", label: "Real streets" }]} />}
+            {mapKind === "grid" && <Segmented value={layer} onChange={setLayer} className="glass" options={[{ value: "haze", label: "Haze" }, { value: "tiles", label: "AQI grid" }, { value: "delta", label: "Change" }]} />}
             <Segmented value={view} onChange={setView} className="glass" options={[{ value: "auto", label: "Live" }, { value: "before", label: "Before" }, { value: "after", label: "After" }]} />
           </div>
 
