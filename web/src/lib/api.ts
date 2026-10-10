@@ -43,7 +43,11 @@ export const api = {
   optimise: (zone: string, target: number, budget: number, months: number) => j<OptimiseResult>(`/api/optimise?zone=${zone}&target=${target}&budget=${budget}&months=${months}`),
   trackRecord: () => j<TrackRecord>("/api/track-record"),
   sensors: (id: string) => j<SensorAdvice>(`/api/runs/${id}/sensors`),
+  breathe: (zone: string, run?: string) => j<Breathe>(`/api/breathe?zone=${zone}${run ? `&run=${run}` : ""}`),
 };
+
+export interface BreatheHour { hour: number; lo: number; hi: number; mid: number; cut: number }
+export interface Breathe { zone: string; hours: BreatheHour[]; bestWindow: [number, number]; worstHour: number; refs: string[] }
 
 export interface Lever { id: string; label: string; policy: string; cost: number; costRef: string; deltaLo: number; deltaHi: number; childHoursLo: number; childHoursHi: number }
 export interface Portfolio { levers: string[]; labels: string[]; cost: number; deltaLo: number; deltaHi: number; pTarget: number; childHoursLo: number; childHoursHi: number }
