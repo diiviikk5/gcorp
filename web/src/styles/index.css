@@ -3,6 +3,7 @@
 @theme {
   --font-sans: "Geist", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
 
   --color-bg: #000000;
   --color-s1: #0a0a0a;
@@ -157,55 +158,59 @@
 }
 
 /* ------------------------------------------------------------------ */
-/* Landing: "sodium & smog". Warm near-black, hairlines, one accent    */
-/* that only lights what is live (iso-glow vocabulary).                */
+/* Landing: "axonometric print". Paper, ink hairlines, shaded faces,   */
+/* one flat vermilion for whatever is live. No glow, no blur.          */
 /* ------------------------------------------------------------------ */
 .landing {
-  --bg: #0b0a09;
-  --panel: #110f0e;
-  --edge: #1f1c1a;
-  --line: #3e3a36;
-  --detail: #2a2725;
-  --body: #141211;
-  --deck: #191716;
-  --recess: #0d0c0b;
-  --ink: #8d867f;
-  --ink-hi: #f1ebe4;
-  --accent: #ff9a2e;
-  --accent-hi: #ffc77a;
-  --accent-dim: rgb(255 154 46 / 0.1);
-  --haze: #8a5a2e;
+  --bg: #f2f0eb;
+  --panel: #ebe8e1;
+  --edge: #d8d4cb;
+  --line: #1c1b19;
+  --detail: #c9c4ba;
+  --top: #fbfaf7;
+  --front: #ecebe5;
+  --side: #dcd9d1;
+  --recess: #e3dfd6;
+  --ink: #6d6a64;
+  --ink-hi: #121110;
+  --accent: #ff4a1c;
+  --accent-dim: rgb(255 74 28 / 0.08);
   background: var(--bg);
   color: var(--ink-hi);
+  color-scheme: light;
 }
-.landing .face { fill: var(--body); stroke: var(--line); stroke-width: 1; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
-.landing .face.top { fill: var(--deck); }
-.landing .face.recess { fill: var(--recess); }
-.landing .detail { fill: none; stroke: var(--detail); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.landing ::selection { background: rgb(255 74 28 / 0.18); }
+.landing .face { fill: var(--front); stroke: var(--line); stroke-width: 0.9; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.landing .face.side { fill: var(--side); }
+.landing .face.top { fill: var(--top); }
+.landing .face.recess { fill: var(--recess); stroke: none; }
+.landing .detail { fill: none; stroke: var(--detail); stroke-width: 0.8; vector-effect: non-scaling-stroke; }
 .landing .label { fill: var(--ink); font-family: var(--font-mono); letter-spacing: 0.08em; }
 .landing .label.hi { fill: var(--ink-hi); }
-.landing .win { fill: var(--recess); stroke: var(--detail); stroke-width: 0.6; vector-effect: non-scaling-stroke; transition: fill 0.5s, stroke 0.5s; }
-.landing .win.lit { fill: var(--accent); stroke: var(--accent-hi); }
-.landing .win.lit.dim { opacity: 0.45; }
-.landing .led { fill: var(--detail); transition: fill 0.25s; }
-.landing .led.hot { fill: var(--accent-hi); filter: url(#lg-glow); }
-.landing .halo { fill: var(--accent); opacity: 0; transition: opacity 0.4s; }
-.landing .halo.hot { opacity: 0.35; }
-.landing .wire { fill: none; stroke: var(--line); stroke-width: 1; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.4s; }
-.landing .wire.hot { stroke: var(--accent); filter: url(#lg-soft); }
+.landing .label.agent { opacity: 0; transition: opacity 0.35s, fill 0.35s; }
+.landing .label.agent.hi { opacity: 1; fill: var(--accent); }
+.landing .win { fill: var(--top); stroke: var(--detail); stroke-width: 0.6; vector-effect: non-scaling-stroke; transition: fill 0.6s; }
+.landing .win.lit { fill: var(--line); stroke: var(--line); }
+.landing .win.lit.dim { fill: #8d8a83; stroke: #8d8a83; }
+.landing .led { fill: var(--top); stroke: var(--line); stroke-width: 0.9; vector-effect: non-scaling-stroke; transition: fill 0.25s; }
+.landing .led.hot { fill: var(--accent); stroke: var(--accent); }
+.landing .halo { display: none; }
+.landing .wire { fill: none; stroke: var(--detail); stroke-width: 0.9; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.4s; }
+.landing .wire.hot { stroke: var(--accent); }
 .landing .wire.dash { stroke-dasharray: 2 4; }
-.landing .pulse { fill: none; stroke: var(--accent-hi); stroke-width: 2.4; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-dasharray: 70 1200; stroke-dashoffset: 70; opacity: 0; filter: url(#lg-glow); }
+.landing .pulse { fill: none; stroke: var(--accent); stroke-width: 2.2; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-dasharray: 60 1200; stroke-dashoffset: 60; opacity: 0; }
 .landing .pulse.go { animation: lg-flow 1.1s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-@keyframes lg-flow { 0% { stroke-dashoffset: 70; opacity: 1; } 90% { opacity: 1; } 100% { stroke-dashoffset: -1000; opacity: 0; } }
+@keyframes lg-flow { 0% { stroke-dashoffset: 60; opacity: 1; } 90% { opacity: 1; } 100% { stroke-dashoffset: -1000; opacity: 0; } }
 .landing .node.hot .face { stroke: var(--accent); }
-.landing .node.hot .face.top { fill: color-mix(in oklab, var(--accent) 22%, var(--deck)); }
-.landing .truck .face { fill: var(--deck); }
-.landing .truck .lamp { fill: var(--accent-hi); filter: url(#lg-soft); }
-.landing .haze { fill: var(--haze); transition: opacity 1.6s ease; }
-.landing .glow-text { color: var(--accent); text-shadow: 0 0 18px rgb(255 154 46 / 0.55); }
+.landing .node.hot .face.top { fill: var(--accent); }
+.landing .truck .face.top { fill: var(--line); }
+.landing .haze { fill: url(#lg-stipple); transition: opacity 1.6s ease; }
+.landing .accent { color: var(--accent); }
 .landing .hair { border-color: var(--edge); }
-.landing .btn-accent { background: var(--accent); color: #140b02; box-shadow: 0 0 0 1px rgb(255 199 122 / 0.5) inset, 0 10px 40px -10px rgb(255 154 46 / 0.7); }
-.landing .btn-accent:hover { background: var(--accent-hi); }
-.landing .btn-line { box-shadow: 0 0 0 1px var(--line) inset; color: var(--ink-hi); }
-.landing .btn-line:hover { box-shadow: 0 0 0 1px var(--ink) inset; }
+.landing .btn-accent { background: var(--ink-hi); color: var(--bg); }
+.landing .btn-accent:hover { background: #2a2826; }
+.landing .btn-line { box-shadow: 0 0 0 1px var(--edge) inset; color: var(--ink-hi); }
+.landing .btn-line:hover { box-shadow: 0 0 0 1px var(--ink-hi) inset; }
+.landing h1, .landing h2 { font-family: var(--font-display); font-weight: 400; letter-spacing: -0.02em; }
+.landing h1 em, .landing h2 em { font-style: italic; color: var(--accent); }
 @media (prefers-reduced-motion: reduce) { .landing .pulse.go { animation: none; } }

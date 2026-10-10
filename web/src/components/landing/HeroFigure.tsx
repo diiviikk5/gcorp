@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { frame, GLOW_DEFS, seeded, type V3 } from "./iso";
 
-// Fig 01 · Anand Vihar, 23:00. A hairline city block on the NH-24 corridor.
-// Live things glow: lit windows, sensor LEDs, the agent speaking, the wire it
+// Fig 01 · Anand Vihar, 23:00. An axonometric city block on the NH-24 corridor.
+// Only what is live takes the accent: the reporting sensor, the agent speaking, the wire it
 // speaks on. Applying the policy clears the trucks and thins the haze, a little.
 
 const PLATE = { w: 520, d: 400 };
@@ -21,14 +21,6 @@ const AGENTS = [
 
 const SENSORS: V3[] = [[306, 196, 10], [384, 262, 10], [120, 262, 10], [470, 196, 10]];
 
-export const HERO_CLAIMS = [
-  { agent: "Engineer", text: "Trucks reroute to the expressway; diversion was", ref: "30%", status: "accepted" as const },
-  { agent: "Engineer", text: "A ban here cuts PM2.5 by about a third.", status: "rejected" as const },
-  { agent: "Epidemiologist", text: "Schools within 500 m of an arterial:", ref: "57", status: "accepted" as const },
-  { agent: "Economist", text: "Operators running two trucks or fewer:", ref: "62%", status: "accepted" as const },
-  { agent: "Skeptic", text: "Weakest assumption: compliance borrowed from a car scheme.", status: "accepted" as const },
-  { agent: "Epidemiologist", text: "This should prevent asthma admissions.", status: "ask" as const },
-];
 
 interface Lot { x: number; y: number; w: number; d: number; h: number }
 
@@ -36,13 +28,13 @@ function lots(x0: number, y0: number, x1: number, y1: number, rnd: () => number,
   const out: Lot[] = [];
   let x = x0;
   while (x < x1 - 20) {
-    const w = Math.min(x1 - x, 34 + Math.floor(rnd() * 26));
+    const w = Math.min(x1 - x, 44 + Math.floor(rnd() * 30));
     let y = y0;
     while (y < y1 - 20) {
-      const d = Math.min(y1 - y, 30 + Math.floor(rnd() * 26));
-      if (rnd() > 0.12) {
+      const d = Math.min(y1 - y, 40 + Math.floor(rnd() * 30));
+      if (rnd() > 0.38) {
         const h = 28 + Math.floor(rnd() * 70) + (rnd() < tall ? 90 : 0);
-        out.push({ x: x + 4, y: y + 4, w: w - 10, d: d - 10, h });
+        out.push({ x: x + 6, y: y + 6, w: w - 16, d: d - 16, h });
       }
       y += d;
     }
@@ -53,10 +45,10 @@ function lots(x0: number, y0: number, x1: number, y1: number, rnd: () => number,
 
 export function HeroFigure({ policy, onTurn }: { policy: boolean; onTurn?: (i: number) => void }) {
   const K = useMemo(
-    () => frame([[0, 0, 0], [PLATE.w, 0, 0], [0, PLATE.d, 0], [PLATE.w, PLATE.d, 0], [CENTER[0], CENTER[1], COUNCIL_Z + 40], [0, 0, 160]], 0.03, 1.25),
+    () => frame([[0, 0, 0], [PLATE.w, 0, 0], [0, PLATE.d, 0], [PLATE.w, PLATE.d, 0], [CENTER[0], CENTER[1], COUNCIL_Z + 40], [0, 0, 160]], 0.02, 1.7),
     [],
   );
-  const svgRef = useRef<SVGSVGElement>(null);
+  const svgRef = useRef<HTMLDivElement>(null);
   const trucks = useRef<(SVGGElement | null)[]>([]);
   const cars = useRef<(SVGGElement | null)[]>([]);
   const [turn, setTurn] = useState(0);
@@ -87,12 +79,12 @@ export function HeroFigure({ policy, onTurn }: { policy: boolean; onTurn?: (i: n
 
     const building = (b: Lot, wid: number) => {
       let g = box(b.x, b.y, 10, b.w, b.d, b.h);
-      const rows = Math.floor((b.h - 8) / 14);
-      const fc = Math.floor((b.w - 6) / 11), sc = Math.floor((b.d - 6) / 11);
+      const rows = Math.floor((b.h - 8) / 18);
+      const fc = Math.floor((b.w - 6) / 14), sc = Math.floor((b.d - 6) / 14);
       let wf = "", ws = "";
       for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < fc; c++) wf += `<rect class="win" data-w="${wid}" x="${5 + c * 11}" y="${6 + r * 14}" width="6" height="7"/>`;
-        for (let c = 0; c < sc; c++) ws += `<rect class="win" data-w="${wid}" x="${5 + c * 11}" y="${6 + r * 14}" width="6" height="7"/>`;
+        for (let c = 0; c < fc; c++) wf += `<rect class="win" data-w="${wid}" x="${6 + c * 14}" y="${7 + r * 18}" width="6" height="8"/>`;
+        for (let c = 0; c < sc; c++) ws += `<rect class="win" data-w="${wid}" x="${6 + c * 14}" y="${7 + r * 18}" width="6" height="8"/>`;
       }
       g += `<g transform="${FRONT(b.x, b.y + b.d, 10 + b.h)}">${wf}</g><g transform="${SIDE(b.x + b.w, b.y + b.d, 10 + b.h)}">${ws}</g>`;
       // roof detail
@@ -115,12 +107,12 @@ export function HeroFigure({ policy, onTurn }: { policy: boolean; onTurn?: (i: n
     SENSORS.forEach(([x, y, z], i) => {
       sens += box(x, y, z, 4, 4, 44);
       const [cx, cy] = P(x + 2, y + 2, z + 50);
-      sens += `<circle class="halo" data-s="${i}" cx="${cx}" cy="${cy}" r="12" filter="url(#lg-bloom)"/><circle class="led" data-s="${i}" cx="${cx}" cy="${cy}" r="3.4"/>`;
+      sens += `<circle class="halo" data-s="${i}" cx="${cx}" cy="${cy}" r="12"/><circle class="led" data-s="${i}" cx="${cx}" cy="${cy}" r="3.4"/>`;
     });
 
     // haze: three blurred planes over the block
     const hz = (z: number, inset: number) => poly([[inset, inset, z], [PLATE.w - inset, inset, z], [PLATE.w - inset, PLATE.d - inset, z], [inset, PLATE.d - inset, z]]);
-    const haze = [[70, 30], [130, 60], [200, 90]].map(([z, ins], i) => `<path class="haze" data-h="${i}" d="${hz(z, ins)}" filter="url(#lg-haze)"/>`).join("");
+    const haze = [[150, 70]].map(([z, ins], i) => `<path class="haze" data-h="${i}" d="${hz(z, ins)}"/>`).join("");
 
     return { plate: s, back: backS, front: frontS, sens, haze };
   }, [K]);
@@ -150,12 +142,12 @@ export function HeroFigure({ policy, onTurn }: { policy: boolean; onTurn?: (i: n
       const [x, y, z] = a.pos;
       nodes += `<g class="node" data-n="${i}">${box(x - 9, y - 9, z - 6, 18, 18, 12)}</g>`;
       const [lx, ly] = P(x, y, z + 22);
-      nodes += `<text class="label" data-l="${i}" x="${lx}" y="${ly}" text-anchor="middle" font-size="8.5">${a.label}</text>`;
+      nodes += `<text class="label agent" data-l="${i}" x="${lx}" y="${ly}" text-anchor="middle" font-size="9">${a.label}</text>`;
     });
     const [vx, vy] = P(CENTER[0], CENTER[1], COUNCIL_Z + 34);
     nodes += `<g class="node" data-n="v">${box(CENTER[0] - 13, CENTER[1] - 13, COUNCIL_Z - 8, 26, 26, 18)}</g>`;
-    nodes += `<circle class="halo" data-vh cx="${P(...CENTER)[0]}" cy="${P(...CENTER)[1] - 14}" r="34" filter="url(#lg-bloom)"/>`;
-    nodes += `<text class="label hi" x="${vx}" y="${vy}" text-anchor="middle" font-size="9">VERIFIER</text>`;
+    nodes += `<circle class="halo" data-vh cx="${P(...CENTER)[0]}" cy="${P(...CENTER)[1] - 14}" r="34"/>`;
+    nodes += `<text class="label agent" data-vl x="${vx}" y="${vy}" text-anchor="middle" font-size="9">VERIFIER</text>`;
     return { wires, pulses, ringPath, nodes };
   }, [K, ring]);
 
@@ -174,7 +166,7 @@ export function HeroFigure({ policy, onTurn }: { policy: boolean; onTurn?: (i: n
     let raf = 0, last = performance.now(), acc = 0;
     const wins = svgRef.current ? Array.from(svgRef.current.querySelectorAll<SVGRectElement>(".win")) : [];
     const rnd = seeded(5);
-    wins.forEach((w) => { if (rnd() < 0.24) w.classList.add("lit", ...(rnd() < 0.4 ? ["dim"] : [])); });
+    wins.forEach((w) => { if (rnd() < 0.14) w.classList.add("lit", ...(rnd() < 0.45 ? ["dim"] : [])); });
     const loop = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
@@ -236,10 +228,12 @@ export function HeroFigure({ policy, onTurn }: { policy: boolean; onTurn?: (i: n
     const t2 = window.setTimeout(() => {
       svg.querySelector('[data-n="v"]')?.classList.add("hot");
       svg.querySelector("[data-vh]")?.classList.add("hot");
+      svg.querySelector("[data-vl]")?.classList.add("hi");
     }, 1250);
     const t3 = window.setTimeout(() => {
       svg.querySelector('[data-n="v"]')?.classList.remove("hot");
       svg.querySelector("[data-vh]")?.classList.remove("hot");
+      svg.querySelector("[data-vl]")?.classList.remove("hi");
     }, 1800);
     onTurn?.(turn);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
@@ -250,25 +244,34 @@ export function HeroFigure({ policy, onTurn }: { policy: boolean; onTurn?: (i: n
     trucks.current.forEach((t) => t && (t.style.opacity = policy ? "0" : "1"));
     const svg = svgRef.current;
     svg?.querySelectorAll<SVGPathElement>(".haze").forEach((h, i) => {
-      const base = [0.42, 0.32, 0.22][i];
-      h.style.opacity = String(policy ? base * 0.72 : base);
+      const base = [0.9][i] ?? 0;
+      h.style.opacity = String(policy ? base * 0.45 : base);
     });
   }, [policy]);
 
+  const layer = "absolute inset-0 h-full w-full [will-change:transform]";
   return (
-    <svg ref={svgRef} viewBox={K.viewBox} className="h-full w-full" role="img" aria-label="Isometric city block in Anand Vihar with traffic, air sensors and a council of AI agents above it, wired to the sensors. Apply the policy to remove trucks and see the haze thin.">
-      <defs dangerouslySetInnerHTML={{ __html: GLOW_DEFS }} />
-      <g dangerouslySetInnerHTML={{ __html: scene.plate + scene.back }} />
-      <g>
+    <div ref={svgRef} className="relative h-full w-full" role="img" aria-label="Isometric city block in Anand Vihar with traffic, air sensors and a council of AI agents above it, wired to the sensors. The night truck ban removes trucks and thins the haze.">
+      <svg viewBox={K.viewBox} className={layer} aria-hidden>
+        <defs dangerouslySetInnerHTML={{ __html: GLOW_DEFS }} />
+        <g dangerouslySetInnerHTML={{ __html: scene.plate + scene.back }} />
+      </svg>
+      <svg viewBox={K.viewBox} className={layer} aria-hidden>
         {vehicles.cr.map((_, i) => (
           <g key={`c${i}`} ref={(el) => { cars.current[i] = el; }} dangerouslySetInnerHTML={{ __html: carSvg }} />
         ))}
         {vehicles.tr.map((_, i) => (
           <g key={`t${i}`} className="truck" style={{ transition: "opacity 0.8s ease" }} ref={(el) => { trucks.current[i] = el; }} dangerouslySetInnerHTML={{ __html: truckSvg }} />
         ))}
-      </g>
-      <g dangerouslySetInnerHTML={{ __html: scene.sens + scene.front + scene.haze }} />
-      <g dangerouslySetInnerHTML={{ __html: council.ringPath + council.wires + council.pulses + council.nodes }} />
-    </svg>
+      </svg>
+      <svg viewBox={K.viewBox} className={layer} aria-hidden>
+        <defs dangerouslySetInnerHTML={{ __html: GLOW_DEFS }} />
+        <g dangerouslySetInnerHTML={{ __html: scene.sens + scene.front + scene.haze }} />
+      </svg>
+      <svg viewBox={K.viewBox} className={layer} aria-hidden>
+        <defs dangerouslySetInnerHTML={{ __html: GLOW_DEFS }} />
+        <g dangerouslySetInnerHTML={{ __html: council.ringPath + council.wires + council.pulses + council.nodes }} />
+      </svg>
+    </div>
   );
 }

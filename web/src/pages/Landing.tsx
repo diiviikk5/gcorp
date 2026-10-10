@@ -3,7 +3,7 @@ import { Link } from "react-router";
 import { motion, useInView } from "motion/react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { useRef } from "react";
-import { HeroFigure, HERO_CLAIMS } from "@/components/landing/HeroFigure";
+import { HeroFigure } from "@/components/landing/HeroFigure";
 import { PIPE, PipelineFigure } from "@/components/landing/PipelineFigure";
 import { ArchFigure } from "@/components/landing/ArchFigure";
 import { LogoMark } from "@/components/ui/Logo";
@@ -28,7 +28,7 @@ const rise = { initial: { opacity: 0, y: 16 }, whileInView: { opacity: 1, y: 0 }
 function Nav() {
   return (
     <header className="fixed inset-x-0 top-0 z-50">
-      <div className="mx-auto mt-3 flex h-12 max-w-[1240px] items-center justify-between rounded-full border border-[var(--edge)] bg-[rgb(11_10_9/0.7)] px-3 pl-4 backdrop-blur-xl">
+      <div className="mx-auto mt-3 flex h-12 max-w-[1240px] items-center justify-between rounded-full border border-[var(--edge)] bg-[rgb(242_240_235/0.82)] px-3 pl-4 backdrop-blur-xl">
         <Link to="/" className="flex items-center gap-2 text-[14px] font-medium tracking-tight">
           <LogoMark className="size-5" /> Gcorp
         </Link>
@@ -49,92 +49,67 @@ function Nav() {
 function Hero() {
   const s = useFlagship();
   const [policy, setPolicy] = useState(false);
-  const [turn, setTurn] = useState(0);
-  const lines = useMemo(() => Array.from({ length: 3 }, (_, k) => HERO_CLAIMS[(turn + k) % HERO_CLAIMS.length]), [turn]);
 
   useEffect(() => {
-    const t = window.setTimeout(() => setPolicy(true), 3800);
+    const t = window.setTimeout(() => setPolicy(true), 4200);
     return () => window.clearTimeout(t);
   }, []);
 
   return (
-    <section className="relative min-h-[100svh] overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_55%_at_68%_48%,rgb(255_154_46/0.10),transparent_70%)]" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[var(--bg)] to-transparent" />
+    <section className="relative overflow-hidden pt-36 md:pt-44">
 
-      <div className="relative mx-auto grid max-w-[1320px] items-center gap-6 px-6 pt-28 lg:min-h-[100svh] lg:grid-cols-[minmax(0,500px)_1fr] lg:pt-16">
-        <div className="relative z-10">
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="inline-flex items-center gap-2 rounded-full border border-[var(--edge)] px-3 py-1 font-mono text-[11px] tracking-wider text-[var(--ink)]">
-            <span className="size-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_10px_var(--accent)]" /> TRACK 01 · AIR · DELHI
-          </motion.div>
-          <motion.h1
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.1, ease: [0.2, 0.7, 0.2, 1] }}
-            className="mt-6 text-[clamp(44px,6.4vw,84px)] font-semibold leading-[0.95] tracking-[-0.045em]"
-          >
-            Test an air policy <span className="glow-text">before</span> the city pays for it.
-          </motion.h1>
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.9, delay: 0.35 }} className="mt-6 max-w-[460px] text-[17px] leading-relaxed text-[var(--ink)]">
-            Type a policy in plain English. A council of AI agents argues whether it works, a verifier strikes any claim it can't trace to a source, and the city shows the change as an honest range.
-          </motion.p>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.9, delay: 0.5 }} className="mt-9 flex flex-wrap items-center gap-3">
-            <Link to="/app/new" className="btn-accent inline-flex h-11 items-center gap-2 rounded-full px-5 text-[14.5px] font-medium transition-colors">
-              Pre-check a policy <ArrowRight className="size-4" />
-            </Link>
-            <Link to={LIVE_RUN} className="btn-line inline-flex h-11 items-center gap-2 rounded-full px-5 text-[14.5px] transition-shadow">
-              Watch a live run
-            </Link>
-          </motion.div>
+      <div className="relative mx-auto max-w-[1040px] px-6 text-center">
+        <h1 className="text-[clamp(56px,9vw,136px)] leading-[0.9]">
+          {["Test an air policy"].map((line) => (
+            <motion.span key={line} className="block" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: [0.2, 0.7, 0.2, 1] }}>
+              {line}
+            </motion.span>
+          ))}
+          <motion.span className="block text-[var(--ink)]" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.12, ease: [0.2, 0.7, 0.2, 1] }}>
+            <em>before</em> the city pays.
+          </motion.span>
+        </h1>
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 0.4 }} className="mx-auto mt-7 max-w-[540px] text-[17px] leading-relaxed text-[var(--ink)]">
+          AI agents debate it. Only sourced claims survive.
+        </motion.p>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 0.55 }} className="mt-9 flex flex-wrap items-center justify-center gap-3">
+          <Link to="/app/new" className="btn-accent inline-flex h-11 items-center gap-2 rounded-full px-5 text-[14.5px] font-medium transition-colors">
+            Pre-check a policy <ArrowRight className="size-4" />
+          </Link>
+          <Link to={LIVE_RUN} className="btn-line inline-flex h-11 items-center gap-2 rounded-full px-5 text-[14.5px] transition-shadow">
+            Watch a live run
+          </Link>
+        </motion.div>
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1.6, delay: 0.3, ease: [0.2, 0.7, 0.2, 1] }}
+        className="relative mx-auto mt-16 max-w-[1360px] [mask-image:linear-gradient(to_bottom,black_72%,transparent)]"
+      >
+        <div className="aspect-[1.7] w-full">
+          <HeroFigure policy={policy} />
         </div>
+      </motion.div>
 
-        <div className="relative -mx-6 lg:-mr-24 lg:ml-0">
-          <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.4, ease: [0.2, 0.7, 0.2, 1] }} className="aspect-[1.25] w-full">
-            <HeroFigure policy={policy} onTurn={setTurn} />
-          </motion.div>
-
-          {/* Policy switch + readout */}
-          <div className="absolute bottom-6 right-6 flex flex-col items-end gap-2 lg:right-28">
-            <button
-              onClick={() => setPolicy((p) => !p)}
-              className="flex items-center gap-3 rounded-full border border-[var(--edge)] bg-[rgb(11_10_9/0.75)] py-1.5 pl-3.5 pr-1.5 text-[12.5px] backdrop-blur-md transition-colors hover:border-[var(--line)]"
-              aria-pressed={policy}
-            >
-              <span className="text-[var(--ink)]">Night truck ban</span>
-              <span className={cn("relative h-5 w-9 rounded-full transition-colors", policy ? "bg-[var(--accent)]" : "bg-[var(--detail)]")}>
-                <span className={cn("absolute top-0.5 size-4 rounded-full bg-[var(--ink-hi)] transition-transform", policy ? "translate-x-[18px]" : "translate-x-0.5")} />
-              </span>
-            </button>
-            <div className="rounded-xl border border-[var(--edge)] bg-[rgb(11_10_9/0.75)] px-3.5 py-2.5 text-right font-mono text-[11.5px] leading-relaxed text-[var(--ink)] backdrop-blur-md">
-              <div>anand vihar · zone mean</div>
-              <div className="text-[15px] text-[var(--ink-hi)]">
-                aqi {fmt(s.zoneBefore)} <span className="text-[var(--ink)]">→</span>{" "}
-                <span className={policy ? "glow-text" : ""}>{policy ? `${fmt(s.zoneAfterLo)}–${fmt(s.zoneAfterHi)}` : fmt(s.zoneBefore)}</span>
-              </div>
-              <div className="text-[10.5px]">a range under stated assumptions</div>
-            </div>
-          </div>
-
-          {/* Council ticker */}
-          <div className="absolute bottom-6 left-6 hidden w-[360px] rounded-2xl border border-[var(--edge)] bg-[rgb(11_10_9/0.8)] p-3.5 backdrop-blur-md sm:block lg:left-2">
-            <div className="mb-2 flex items-center justify-between font-mono text-[10.5px] tracking-wider text-[var(--ink)]">
-              <span>COUNCIL · LIVE</span>
-              <span className="flex items-center gap-1.5"><span className="size-1.5 animate-pulse rounded-full bg-[var(--accent)]" /> verifying</span>
-            </div>
-            <div className="space-y-2">
-              {lines.map((c, i) => (
-                <motion.div key={`${turn}-${i}`} initial={{ opacity: 0, y: 6 }} animate={{ opacity: i === 2 ? 1 : 0.55, y: 0 }} transition={{ duration: 0.4 }} className="flex gap-2 text-[12px] leading-snug">
-                  <span className="w-[86px] shrink-0 text-[var(--ink)]">{c.agent}</span>
-                  <span className={cn("min-w-0 flex-1", c.status === "rejected" && "text-[var(--ink)] line-through decoration-[var(--accent)]")}>
-                    {c.text} {c.ref && <span className="text-[var(--accent-hi)] underline decoration-dotted underline-offset-2">{c.ref}</span>}
-                  </span>
-                  <span className={cn("shrink-0 font-mono text-[10px]", c.status === "rejected" ? "text-[var(--accent)]" : "text-[var(--ink)]")}>
-                    {c.status === "accepted" ? "✓ src" : c.status === "rejected" ? "✗ no src" : "[ask]"}
-                  </span>
-                </motion.div>
-              ))}
-            </div>
-          </div>
+      <div className="relative -mt-24 flex justify-center px-6 pb-24 md:-mt-32">
+        <div className="flex items-center gap-4 rounded-full border border-[var(--edge)] bg-[rgb(242_240_235/0.82)] py-1.5 pl-4 pr-1.5 font-mono text-[12px] text-[var(--ink)] backdrop-blur-md">
+          <span className="hidden sm:inline">anand vihar</span>
+          <span className="tabular text-[var(--ink-hi)]">
+            aqi {fmt(s.zoneBefore)} <span className="text-[var(--ink)]">→</span>{" "}
+            <span className={policy ? "accent" : ""}>{policy ? `${fmt(s.zoneAfterLo)}–${fmt(s.zoneAfterHi)}` : "—"}</span>
+          </span>
+          <button
+            onClick={() => setPolicy((p) => !p)}
+            aria-pressed={policy}
+            className={cn("flex items-center gap-2.5 rounded-full py-1.5 pl-3 pr-1.5 font-sans text-[12.5px] transition-colors", policy ? "bg-[var(--accent-dim)] text-[var(--ink-hi)]" : "bg-black/[0.04] text-[var(--ink-hi)] hover:bg-black/[0.07]")}
+          >
+            Night truck ban
+            <span className={cn("relative h-5 w-9 rounded-full transition-colors", policy ? "bg-[var(--accent)]" : "bg-[var(--detail)]")}>
+              <span className={cn("absolute top-0.5 size-4 rounded-full bg-[var(--ink-hi)] transition-transform", policy ? "translate-x-[18px]" : "translate-x-0.5")} />
+            </span>
+          </button>
         </div>
       </div>
     </section>
@@ -172,7 +147,7 @@ function How() {
     <section id="how" ref={ref} className="border-t border-[var(--edge)]">
       <div className="mx-auto max-w-[1240px] px-6 py-28">
         <motion.div {...rise} className="flex items-end justify-between gap-6">
-          <h2 className="text-[clamp(28px,3.4vw,44px)] font-semibold tracking-[-0.035em]">Five stages. Every one writes a file.</h2>
+          <h2 className="text-[clamp(34px,4.2vw,58px)] ">Five stages. Every one writes a file.</h2>
           <span className="hidden font-mono text-[11px] tracking-wider text-[var(--ink)] md:block">FIG 02 · RUNS/&lt;RUN-ID&gt;/</span>
         </motion.div>
         <motion.div {...rise} className="mt-14">
@@ -207,8 +182,8 @@ function Receipts() {
       <div className="mx-auto grid max-w-[1240px] gap-14 px-6 py-28 lg:grid-cols-[1fr_1.1fr]">
         <motion.div {...rise}>
           <span className="font-mono text-[11px] tracking-wider text-[var(--ink)]">FIG 03 · THE VERIFIER</span>
-          <h2 className="mt-4 text-[clamp(28px,3.4vw,44px)] font-semibold leading-[1.05] tracking-[-0.035em]">
-            Numbers come from the simulator and the ledger. <span className="text-[var(--ink)]">Never from the agents.</span>
+          <h2 className="mt-4 text-[clamp(34px,4.2vw,58px)] leading-[1.02]">
+            Numbers come from the simulator and the ledger. <em>Never from the agents.</em>
           </h2>
           <p className="mt-5 max-w-md text-[15.5px] leading-relaxed text-[var(--ink)]">
             If an agent could produce a figure, the verifier would have nothing to check. So agents argue about assumptions, and every number on screen links to the row it came from.
@@ -222,7 +197,7 @@ function Receipts() {
                 <span className={r.status === "rejected" ? "text-[var(--accent)]" : "text-[var(--ink)]"}>{r.status === "accepted" ? "ACCEPTED" : r.status === "rejected" ? "REJECTED" : "[ASK]"}</span>
               </div>
               <div className={cn("mt-2 text-[15px] leading-snug", r.status === "rejected" && "text-[var(--ink)] line-through decoration-[var(--accent)]")}>
-                {r.claim} {r.value && <span className="text-[var(--accent-hi)] underline decoration-dotted underline-offset-4">{r.value}</span>}
+                {r.claim} {r.value && <span className="text-[var(--accent)] underline decoration-dotted underline-offset-4">{r.value}</span>}
               </div>
               <motion.div initial={false} animate={{ height: open === i ? "auto" : 0, opacity: open === i ? 1 : 0 }} className="overflow-hidden">
                 <div className="mt-3 rounded-lg border border-dashed border-[var(--line)] px-3 py-2 font-mono text-[11.5px] leading-relaxed text-[var(--ink)]">{r.src}</div>
@@ -247,7 +222,7 @@ function Honest() {
             v: (
               <div className="relative mt-8 h-10">
                 <div className="absolute inset-x-0 top-1/2 h-px bg-[var(--line)]" />
-                <div className="absolute top-1/2 h-4 -translate-y-1/2 rounded-sm border border-[var(--accent)] bg-[repeating-linear-gradient(135deg,rgb(255_154_46/0.35)_0_2px,transparent_2px_6px)]" style={{ left: `${pct(s.zoneAfterLo)}%`, width: `${pct(s.zoneAfterHi) - pct(s.zoneAfterLo)}%` }} />
+                <div className="absolute top-1/2 h-4 -translate-y-1/2 rounded-sm border border-[var(--accent)] bg-[repeating-linear-gradient(135deg,rgb(255_74_28/0.45)_0_1.5px,transparent_1.5px_6px)]" style={{ left: `${pct(s.zoneAfterLo)}%`, width: `${pct(s.zoneAfterHi) - pct(s.zoneAfterLo)}%` }} />
                 <div className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--ink-hi)]" style={{ left: `${pct(s.zoneBefore)}%` }} />
                 <div className="absolute -bottom-3 font-mono text-[10.5px] text-[var(--ink)]" style={{ left: `${pct(s.zoneAfterLo)}%` }}>{fmt(s.zoneAfterLo)}–{fmt(s.zoneAfterHi)}</div>
                 <div className="absolute -bottom-3 -translate-x-1/2 font-mono text-[10.5px] text-[var(--ink-hi)]" style={{ left: `${pct(s.zoneBefore)}%` }}>{fmt(s.zoneBefore)}</div>
@@ -257,7 +232,7 @@ function Honest() {
           },
           {
             k: "Thin data looks thin",
-            v: <div className="mt-8 h-10 rounded-md bg-[repeating-linear-gradient(135deg,rgb(141_134_127/0.4)_0_2px,transparent_2px_7px)] [mask-image:linear-gradient(90deg,transparent,black_30%,black)]" />,
+            v: <div className="mt-8 h-10 rounded-md bg-[repeating-linear-gradient(135deg,rgb(28_27_25/0.35)_0_1.5px,transparent_1.5px_7px)] [mask-image:linear-gradient(90deg,transparent,black_30%,black)]" />,
             d: "Where sensors are sparse, the band widens and the map is hatched instead of looking confident.",
           },
           {
@@ -289,7 +264,7 @@ function Replay() {
       <div className="mx-auto grid max-w-[1240px] items-center gap-14 px-6 py-28 lg:grid-cols-2">
         <motion.div {...rise}>
           <span className="font-mono text-[11px] tracking-wider text-[var(--ink)]">REPLAY · ODD-EVEN, JAN 2016</span>
-          <h2 className="mt-4 text-[clamp(28px,3.4vw,44px)] font-semibold leading-[1.05] tracking-[-0.035em]">Checked against what actually happened.</h2>
+          <h2 className="mt-4 text-[clamp(34px,4.2vw,58px)] leading-[1.02]">Checked against what actually happened.</h2>
           <p className="mt-5 max-w-md text-[15.5px] leading-relaxed text-[var(--ink)]">
             Run a past policy through the same pipeline and compare the estimate with the observed change. One honest replay is worth more than ten features.
           </p>
@@ -305,7 +280,7 @@ function Replay() {
                 <span className="font-mono text-[13px] text-[var(--ink)]">−{fmt(r.lo, 1)}% to −{fmt(r.hi, 1)}%</span>
               </div>
               <div className="relative mt-3 h-2 rounded-full bg-[var(--detail)]">
-                <div className={cn("absolute inset-y-0 rounded-full", r.accent ? "bg-[var(--accent)] shadow-[0_0_14px_var(--accent)]" : "bg-[var(--ink)]")} style={{ left: `${(r.lo / max) * 100}%`, width: `${Math.max(1.5, ((r.hi - r.lo) / max) * 100)}%` }} />
+                <div className={cn("absolute inset-y-0 rounded-full", r.accent ? "bg-[var(--accent)]" : "bg-[var(--ink)]")} style={{ left: `${(r.lo / max) * 100}%`, width: `${Math.max(1.5, ((r.hi - r.lo) / max) * 100)}%` }} />
               </div>
             </div>
           ))}
@@ -330,7 +305,7 @@ function Stack() {
     <section id="stack" className="border-t border-[var(--edge)]">
       <div className="mx-auto max-w-[1240px] px-6 py-28">
         <motion.div {...rise} className="flex items-end justify-between gap-6">
-          <h2 className="text-[clamp(28px,3.4vw,44px)] font-semibold tracking-[-0.035em]">AWS only where it adds value.</h2>
+          <h2 className="text-[clamp(34px,4.2vw,58px)] ">AWS only where it adds value.</h2>
           <span className="hidden font-mono text-[11px] tracking-wider text-[var(--ink)] md:block">FIG 04 · WHERE IT RUNS</span>
         </motion.div>
         <div className="mt-12 grid items-center gap-12 lg:grid-cols-[1.4fr_1fr]">
@@ -352,10 +327,9 @@ function Stack() {
 function Final() {
   return (
     <section className="relative overflow-hidden border-t border-[var(--edge)]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_70%_at_50%_100%,rgb(255_154_46/0.14),transparent_70%)]" />
       <div className="relative mx-auto max-w-[1240px] px-6 py-36 text-center">
-        <motion.h2 {...rise} className="text-[clamp(40px,6vw,80px)] font-semibold leading-[0.98] tracking-[-0.045em]">
-          What would you <span className="glow-text">have done?</span>
+        <motion.h2 {...rise} className="text-[clamp(48px,7vw,104px)] leading-[0.95]">
+          What would you <em>have done?</em>
         </motion.h2>
         <motion.div {...rise} className="mt-10 flex justify-center gap-3">
           <Link to="/app/new" className="btn-accent inline-flex h-12 items-center gap-2 rounded-full px-6 text-[15px] font-medium transition-colors">

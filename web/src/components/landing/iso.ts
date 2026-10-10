@@ -19,7 +19,7 @@ export function kernel(OX: number, OY: number) {
   const SIDE = (x: number, y: number, z: number) => plane([x, y, z], [0, -1, 0], [0, 0, -1]);
   const rect = (t: string, w: number, h: number, r = 0, cls = "face") => `<g transform="${t}"><rect class="${cls}" width="${w}" height="${h}" rx="${r}"/></g>`;
   const box = (x: number, y: number, z: number, w: number, d: number, h: number, cls = "") =>
-    rect(SIDE(x + w, y + d, z + h), d, h, 0, `face ${cls}`) + rect(FRONT(x, y + d, z + h), w, h, 0, `face ${cls}`) + rect(TOP(x, y, z + h), w, d, 0, `face top ${cls}`);
+    rect(SIDE(x + w, y + d, z + h), d, h, 0, `face side ${cls}`) + rect(FRONT(x, y + d, z + h), w, h, 0, `face front ${cls}`) + rect(TOP(x, y, z + h), w, d, 0, `face top ${cls}`);
   const path = (pts: V3[]) => "M" + pts.map((p) => P(...p).map((n) => n.toFixed(2)).join(" ")).join("L");
   const poly = (pts: V3[]) => path(pts) + "Z";
   return { P, D, plane, TOP, FRONT, SIDE, rect, box, path, poly };
@@ -49,10 +49,10 @@ export function seeded(seed: number) {
   return () => (s = (s * 16807) % 2147483647) / 2147483647;
 }
 
-// Shared SVG <defs>: glow filters use userSpaceOnUse so straight lines don't vanish.
+// Shared SVG <defs>: a printed stipple used for smog. No glow filters.
 export const GLOW_DEFS = `
-  <filter id="lg-glow" filterUnits="userSpaceOnUse" x="-2000" y="-2000" width="6000" height="6000"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-  <filter id="lg-soft" filterUnits="userSpaceOnUse" x="-2000" y="-2000" width="6000" height="6000"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-  <filter id="lg-bloom" filterUnits="userSpaceOnUse" x="-2000" y="-2000" width="6000" height="6000"><feGaussianBlur stdDeviation="9"/></filter>
-  <filter id="lg-haze" filterUnits="userSpaceOnUse" x="-2000" y="-2000" width="6000" height="6000"><feGaussianBlur stdDeviation="18"/></filter>
+  <pattern id="lg-stipple" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(30)">
+    <circle cx="1.5" cy="1.5" r="0.9" fill="#1c1b19" opacity="0.55"/>
+    <circle cx="5" cy="5" r="0.6" fill="#1c1b19" opacity="0.35"/>
+  </pattern>
 `;
