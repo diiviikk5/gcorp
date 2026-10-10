@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
-import { BadgeCheck, BookOpenCheck, Building2, Columns3, LayoutGrid, ListChecks, Plus, Search, Target, Wind } from "lucide-react";
+import { BadgeCheck, BookOpenCheck, Building2, Columns3, FlaskConical, LayoutGrid, ListChecks, Plus, Search, Target, Wind } from "lucide-react";
 import { useEffect } from "react";
 import { cn } from "@/lib/cn";
 import { useRunList, useRuns } from "@/store/runs";
@@ -13,6 +13,7 @@ const NAV = [
   { to: "/app", label: "Overview", icon: LayoutGrid, end: true },
   { to: "/app/assessments", label: "Assessments", icon: ListChecks },
   { to: "/app/plan", label: "Plan", icon: Target },
+  { to: "/app/lab", label: "Street Lab", icon: FlaskConical },
   { to: "/app/compare", label: "Compare", icon: Columns3 },
   { to: "/app/track-record", label: "Track record", icon: BadgeCheck },
   { to: "/app/breathe", label: "Breathe", icon: Wind },
@@ -27,7 +28,7 @@ export function AppLayout() {
   const setPalette = useUi((s) => s.setPalette);
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const fullBleed = /^\/app\/runs\/[^/]+$/.test(pathname);
+  const fullBleed = /^\/app\/runs\/[^/]+$/.test(pathname) || pathname === "/app/lab";
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

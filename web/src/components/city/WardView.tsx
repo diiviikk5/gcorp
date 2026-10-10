@@ -40,7 +40,7 @@ function shapeOf(p: [number, number][]) {
   return s;
 }
 
-function buildGeometry(w: Ward) {
+export function buildGeometry(w: Ward) {
   const blds: THREE.BufferGeometry[] = [];
   for (const b of w.buildings) {
     if (b.p.length < 3) continue;
