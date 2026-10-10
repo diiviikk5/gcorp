@@ -55,3 +55,23 @@ def test_role_contracts_are_enforced():
     rec = Recorder(Run("r-test", "assessment", "now", compile_policy(FLAGSHIP, "anandvihar")))
     with pytest.raises(PermissionError):
         rec.action("engineer", "sim.run", "round 9")
+
+
+def test_planning_engines():
+    from gcorp.planning import breathe, optimise, track_record
+    o = optimise("anandvihar", target=15, budget=2, months=3)
+    assert o["portfolios"] and all(p["cost"] <= 2 for p in o["portfolios"])
+    assert all(len({l for l in p["levers"] if l.startswith("truck")}) <= 1 for p in o["portfolios"])  # exclusive levers
+    t = track_record()
+    assert t["hitsCalibrated"] >= t["hits"]
+    for c in t["cases"]:
+        assert c["id"] not in c["calibratedFrom"]  # leave-one-out: never calibrated on itself
+    b = breathe("anandvihar")
+    assert len(b["hours"]) == 24 and 7 <= b["bestWindow"][0] <= 16
+
+
+def test_interjection_rules():
+    from gcorp.orchestrator import execute, interject
+    r = execute(FLAGSHIP, "anandvihar")
+    interject(r, "What if it's a windy week?")
+    assert r.overrides.get("weather") == "windy" and max(r.sims) == 3
