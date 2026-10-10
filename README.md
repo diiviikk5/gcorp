@@ -17,13 +17,21 @@ web console  ────┘            compiler · simulator · council · veri
 | Surface | Who it's for | What it does |
 |---|---|---|
 | **Run** | Planners | Policy → parameters (stated / assumed / unknown) → simulator range → council debate → verified brief. Every number on screen opens its source. |
-| **Chamber** | Everyone watching | The council at work: desks, the ledger cabinet (the drawer an agent opens lights up), the simulator, the verifier's stamps. Driven by the engine's real action events. |
+| **Council House** (`/council`) | Everyone watching | A 3D cutaway civic building where the agents live. Idle, they work their routines (desk, coffee, water cooler, records). When a run plays, every engine event becomes something they physically do: walking to the exact ledger drawer, carrying a claim to the Verifier's inbox, the stamp coming down, the simulator dial turning. The run clock waits for the bodies, so the story never runs ahead of them. |
+| **Chamber** | Run view | A compact axonometric version of the same, inside each run. |
+| **Street Lab** (`/app/lab`) | Planners, judges | A live dispersion sandbox on real Anand Vihar: OSM roads and buildings, street canyons, last week's real hourly wind and mixing height. Toggle a night or all-day truck ban, odd-even, compliance, and watch the change spread downwind street by street. |
 | **Challenge** | Planners | Interrupt the council: "ANPR cameras at every entry?" The input changes, the simulator re-runs, the map updates. |
 | **Plan** | Planners | Reverse the question: goal + budget → ranked policy portfolios with the chance each meets the goal. |
 | **Track record** | Judges, press | Past Delhi policies replayed and scored against observed outcomes. Raw 2/4 → 4/4 after leave-one-out calibration. |
 | **Breathe** | Schools, residents | Hourly exposure band and the cleanest outdoor window for a school day, with and without a policy. |
 | **Sensor advisor** | Planners | Where one ₹15k sensor most narrows the uncertainty on this decision (value of information). |
 | **Real streets** | Everyone | Anand Vihar in 3D from 1,486 OpenStreetMap buildings, with the real CPCB station. |
+
+## The council
+
+Compiler · **Source analyst** (is the target big enough?) · Engineer · Epidemiologist · Economist · **Externalities analyst** (what comes in from outside: stubble smoke, regional transport) · Skeptic (independent) · Verifier · Brief writer. Each role is a markdown contract in `backend/gcorp/council/roles/`.
+
+Every brief carries a **confidence grade** built only from measurable things: sensor coverage, share of verified (vs demo) sources, share of inputs the planner stated, how much the debate moved the estimate, and open questions. A policy whose estimate swings a lot under debate is labelled *high variance*.
 
 ## The rules that make it trustworthy
 
@@ -72,7 +80,8 @@ The first command starts the engine as a daemon (`~/.gcorp/engine.json`: pid, po
 | Mixing height, wind | Open-Meteo | **live** (`gcorp data pull`) |
 | Schools, hospitals per zone | OpenStreetMap / Overpass | **live** |
 | Building footprints, roads | OpenStreetMap / Overpass | **live** (`gcorp data ward`) |
-| Station PM2.5 | OpenAQ v3 | live with `OPENAQ_API_KEY` in `backend/.env` |
+| Station PM2.5 | OpenAQ v3 | live with `OPENAQ_API_KEY` in `backend/.env`; readings carry their age (Delhi feeds were stale at last pull) |
+| Upwind fires | NASA FIRMS (VIIRS) | live with `FIRMS_MAP_KEY` in `backend/.env` |
 | Source apportionment, costs, past-policy outcomes | IIT Kanpur 2016, TERI-ARAI 2018, published evaluations | demo rows, flagged in the UI until replaced |
 
 Rows pulled live are marked `verified` with their retrieval time and query URL; everything else is visibly `demo`.
@@ -101,12 +110,14 @@ Strands Agents for the council and verifier · Bedrock AgentCore Runtime hosting
 
 ## Demo (90 seconds)
 
-1. Landing: the city draws itself in; the truck ban toggles and the haze thins.
+1. Landing: the city draws itself in; the truck ban toggles and the dots thin.
 2. Console → New assessment → "Ban diesel trucks from entering Anand Vihar at night…".
 3. Chamber: watch the Engineer open drawer L-011, the Verifier **reject** a zone claim built on city-wide data.
 4. Challenge: "ANPR cameras at every entry point" → re-simulated live.
-5. Real streets, then Plan (goal → portfolio) and Track record (2/4 → 4/4).
-6. Close: "What would you have done?"
+5. Council House: convene the same policy and watch the agents walk it through the building.
+6. Street Lab: scrub to a calm night and watch the truck ban clear the NH-24 corridor downwind.
+7. Plan (goal → portfolio) and Track record (2/4 → 4/4, demo outcomes until replaced).
+8. Close: "What would you have done?"
 
 ## Credits
 
