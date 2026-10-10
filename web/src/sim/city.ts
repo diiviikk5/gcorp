@@ -211,7 +211,7 @@ export function zoneCoverage(zoneId: string): "good" | "thin" | "none" {
   let s = 0, n = 0;
   for (const c of city.cells) if (c.zone === zoneId) { s += unc[c.z * city.size + c.x]; n++; }
   const m = n ? s / n : 1;
-  return m < 0.28 ? "good" : m < 0.55 ? "thin" : "none";
+  return m < 0.36 ? "good" : m < 0.6 ? "thin" : "none";
 }
 
 export function zoneBaseline(zoneId: string): number {

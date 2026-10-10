@@ -26,6 +26,7 @@ export default function RunView() {
   const { elapsed, playing, speed, load, tick, setPlaying, setSpeed, seek, runId } = usePlayback();
   const [layer, setLayer] = useState<"haze" | "tiles" | "delta">("haze");
   const [view, setView] = useState<"auto" | "before" | "after">("auto");
+  const [panel, setPanel] = useState<"council" | "policy">("council");
   const duration = bundle?.script.duration ?? 0;
 
   useEffect(() => {
@@ -117,13 +118,7 @@ export default function RunView() {
         <motion.div className="h-px bg-brand" animate={{ width: `${pctDone * 100}%` }} transition={{ duration: 0.2 }} />
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[280px_1fr_360px] 2xl:grid-cols-[320px_1fr_420px]">
-        {/* Left */}
-        <aside className="hidden min-h-0 space-y-6 overflow-y-auto border-r border-line p-4 lg:block">
-          <ScenarioCard scenario={scenario} overrides={d.params} runId={rec.id} />
-          <StageRail stages={d.stages} />
-        </aside>
-
+      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[1fr_380px] 2xl:grid-cols-[1fr_420px]">
         {/* Center: the city */}
         <section className="relative min-h-[420px] overflow-hidden bg-[radial-gradient(ellipse_at_50%_40%,#141414_0%,#000_70%)]">
           <div className="grid-bg pointer-events-none absolute inset-0 opacity-60" />
@@ -221,7 +216,7 @@ export default function RunView() {
 
           <AnimatePresence>
             {d.complete && pctDone >= 1 && !blocked && (
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute bottom-[84px] left-1/2 -translate-x-1/2">
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute left-1/2 top-4 -translate-x-1/2">
                 <Link to={`/app/runs/${rec.id}/brief`} className="glass flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[12px] font-medium text-fg hover:bg-white/10">
                   <span className="size-1.5 rounded-full bg-ok" /> Brief ready: {fmt(sim.summary.deltaLo)}–{fmt(sim.summary.deltaHi)} AQI points <ChevronRight className="size-3.5" />
                 </Link>
@@ -231,8 +226,20 @@ export default function RunView() {
         </section>
 
         {/* Right */}
-        <aside className="hidden min-h-0 border-l border-line bg-s1/40 lg:block">
-          <Transcript events={d.events} claims={d.claims} ctx={ctx} runId={rec.id} activeAgent={d.activeAgent} complete={d.complete} />
+        <aside className="hidden min-h-0 flex-col border-l border-line lg:flex">
+          <div className="flex h-11 shrink-0 items-center border-b border-line px-3">
+            <Segmented value={panel} onChange={setPanel} options={[{ value: "council", label: "Council" }, { value: "policy", label: "Policy" }]} />
+          </div>
+          <div className="min-h-0 flex-1">
+            {panel === "council" ? (
+              <Transcript events={d.events} claims={d.claims} ctx={ctx} runId={rec.id} activeAgent={d.activeAgent} complete={d.complete} />
+            ) : (
+              <div className="h-full space-y-7 overflow-y-auto p-4">
+                <ScenarioCard scenario={scenario} overrides={d.params} runId={rec.id} />
+                <StageRail stages={d.stages} />
+              </div>
+            )}
+          </div>
         </aside>
       </div>
     </div>

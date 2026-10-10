@@ -68,7 +68,7 @@ export function Transcript({ events, claims, ctx, runId, activeAgent, complete }
     <div className="flex h-full flex-col">
       <div className="border-b border-line px-4 pb-3 pt-3.5">
         <div className="flex items-center justify-between">
-          <div className="text-[13px] font-medium">Council</div>
+          <div className="text-[12px] text-faint">Debate</div>
           <div className="text-[11.5px] text-mute tabular">
             {counts.accepted} accepted · <span className={counts.rejected ? "text-bad" : ""}>{counts.rejected} rejected</span> · {counts.ask} open
           </div>
