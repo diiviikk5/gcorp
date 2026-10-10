@@ -1,4 +1,5 @@
 import type { LedgerRow } from "@/lib/types";
+import { getCity } from "@/sim/city";
 
 // Provenance ledger (mirrors the DynamoDB table behind the ledger Lambda).
 // Every value here is DEMO DATA, shaped like the real rows. Replace each with a
@@ -30,8 +31,28 @@ export const LEDGER: LedgerRow[] = [
   { id: "L-022", label: "Asthma admissions dataset for East Delhi", value: "not found", source: "Searched: state health portal, ICMR", url: "https://www.icmr.gov.in", retrievedAt: R, scope: "None", status: "demo", note: "No local dose-response data, so health-outcome claims stay as open questions." },
 ];
 
-export const STATION_ROWS: LedgerRow[] = [];
+export function stationRows(): LedgerRow[] {
+  if (!stationRows_) {
+    stationRows_ = getCity().city.stations.map((s) => ({
+      id: s.ledgerRef,
+      label: `AQI station · ${s.name}`,
+      value: String(s.aqi),
+      unit: "AQI (24 h)",
+      source: "CPCB CAAQMS via OpenAQ",
+      url: "https://openaq.org",
+      retrievedAt: R,
+      scope: `Station ${s.id}, 24 h mean`,
+      status: "demo" as const,
+    }));
+  }
+  return stationRows_;
+}
+let stationRows_: LedgerRow[] | null = null;
+
+export function allLedger(): LedgerRow[] {
+  return [...LEDGER, ...stationRows()];
+}
 
 export function ledgerById(id: string): LedgerRow | undefined {
-  return LEDGER.find((r) => r.id === id) ?? STATION_ROWS.find((r) => r.id === id);
+  return LEDGER.find((r) => r.id === id) ?? stationRows().find((r) => r.id === id);
 }
