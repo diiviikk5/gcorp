@@ -3,12 +3,12 @@ import { cn } from "@/lib/cn";
 type Tone = "neutral" | "brand" | "ok" | "warn" | "bad" | "violet";
 
 const tones: Record<Tone, string> = {
-  neutral: "bg-white/[0.05] text-mute ring-white/10",
-  brand: "bg-brand/10 text-brand ring-brand/25",
-  ok: "bg-ok/10 text-ok ring-ok/25",
-  warn: "bg-warn/10 text-warn ring-warn/25",
-  bad: "bg-bad/10 text-bad ring-bad/25",
-  violet: "bg-a-skeptic/10 text-a-skeptic ring-a-skeptic/25",
+  neutral: "text-mute ring-white/10",
+  brand: "text-fg ring-white/15",
+  ok: "text-fg ring-white/15",
+  warn: "text-mute ring-white/10",
+  bad: "text-bad ring-bad/30",
+  violet: "text-fg ring-white/15",
 };
 
 export function Badge({ tone = "neutral", dot, className, children }: { tone?: Tone; dot?: boolean; className?: string; children: React.ReactNode }) {
