@@ -196,3 +196,13 @@ def breathe(zone: str = "anandvihar", run: str | None = None) -> dict:
         sims = RUNS[run].sims
         hourly = sims[max(sims)]["summary"].get("hourly")
     return _breathe(zone, hourly)
+
+
+@app.get("/api/ward/{zone}")
+def ward(zone: str) -> dict:
+    """Real geometry around a zone (OpenStreetMap), cached by `gcorp data pull --ward`."""
+    from .data import load
+    w = load(f"ward_{zone}.json")
+    if not w:
+        raise HTTPException(404, f"No ward geometry for {zone}; run `gcorp data ward {zone}`")
+    return w

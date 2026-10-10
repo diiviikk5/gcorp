@@ -76,19 +76,23 @@ def pull_weather() -> str:
     return f"{regime} · BLH {mean_blh:.0f} m · wind {mean_wind:.1f} km/h"
 
 
-OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter",
+OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter", "https://overpass.kumi.systems/api/interpreter",
             "https://maps.mail.ru/osm/tools/overpass/api/interpreter"]
 
 
-def _overpass(q: str) -> dict:
+def _overpass(q: str, rounds: int = 4) -> dict:
+    """Try each mirror; on server overload back off and try again (20 s, 40 s, 80 s)."""
     last = None
-    for url in OVERPASS:
-        try:
-            r = httpx.post(url, data={"data": q}, timeout=90, headers=UA)
-            r.raise_for_status()
-            return r.json()
-        except httpx.HTTPError as e:
-            last = e
+    for attempt in range(rounds):
+        for url in OVERPASS:
+            try:
+                r = httpx.post(url, data={"data": q}, timeout=150, headers=UA)
+                r.raise_for_status()
+                return r.json()
+            except httpx.HTTPError as e:
+                last = e
+        if attempt < rounds - 1:
+            time.sleep(20 * 2 ** attempt)
     raise last  # type: ignore[misc]
 
 
@@ -158,3 +162,63 @@ def verified_rows() -> list[dict]:
                          "source": "OpenAQ v3 latest", "url": f"https://explore.openaq.org/locations/{s['id']}", "retrievedAt": s["at"],
                          "scope": f"Station {s['id']}", "status": "verified", "scopeLevel": "point"})
     return rows
+
+
+# --------------------------------------------------------------------------- real ward geometry
+
+def _project(lat0: float, lon0: float):
+    import math
+    k = 111_320.0
+    c = math.cos(math.radians(lat0))
+    return lambda lat, lon: (round((lon - lon0) * k * c, 1), round(-(lat - lat0) * k, 1))  # x east, z south (metres)
+
+
+def pull_ward(zone: str = "anandvihar", radius: int = 1100) -> str:
+    """Building footprints (+ heights), main roads and water around a zone, in local metres."""
+    lat0, lon0 = ZONE_GEO[zone]
+    import math
+    dlat = radius / 111_320.0
+    dlon = radius / (111_320.0 * math.cos(math.radians(lat0)))
+    bb = f"{lat0 - dlat},{lon0 - dlon},{lat0 + dlat},{lon0 + dlon}"
+    els = []
+    for sel in ('way["building"]', 'way["highway"~"^(motorway|trunk|primary|secondary|tertiary|residential|unclassified)$"]', 'way["natural"="water"];way["leisure"="park"]'):
+        parts = "".join(f"{x}({bb});" for x in sel.split(";"))
+        els += _overpass(f"[out:json][timeout:120];({parts});out tags geom;")["elements"]
+        time.sleep(1.5)
+    proj = _project(lat0, lon0)
+    seed = 0
+    buildings, roads, green = [], [], []
+    for e in els:
+        geom = e.get("geometry")
+        if not geom:
+            continue
+        pts = [proj(p["lat"], p["lon"]) for p in geom]
+        t = e.get("tags", {})
+        if "building" in t:
+            if len(pts) < 4:
+                continue
+            h = None
+            try:
+                h = float(str(t.get("height", "")).split()[0]) if t.get("height") else None
+            except ValueError:
+                h = None
+            if h is None and t.get("building:levels"):
+                try:
+                    h = float(t["building:levels"]) * 3.2
+                except ValueError:
+                    pass
+            if h is None:  # deterministic plausible height by type
+                seed = (seed * 1103515245 + 12345 + e["id"]) & 0x7FFFFFFF
+                base = {"apartments": 18, "commercial": 14, "retail": 9, "industrial": 9, "warehouse": 8, "school": 10, "hospital": 16}.get(t["building"], 7)
+                h = base + (seed % 7)
+            buildings.append({"p": pts[:-1] if pts[0] == pts[-1] else pts, "h": round(h, 1), "t": t.get("building")})
+        elif "highway" in t:
+            w = {"motorway": 22, "trunk": 18, "primary": 14, "secondary": 11, "tertiary": 8}.get(t["highway"], 5)
+            roads.append({"p": pts, "w": w, "n": t.get("name", "")})
+        else:
+            green.append({"p": pts[:-1] if pts[0] == pts[-1] else pts, "k": "water" if t.get("natural") == "water" else "park"})
+    stations = [{"name": "Anand Vihar (CPCB)", "p": proj(28.6468, 77.3160)}] if zone == "anandvihar" else []
+    out = {"zone": zone, "center": [lat0, lon0], "radius": radius, "retrievedAt": _now(), "source": "OpenStreetMap via Overpass",
+           "buildings": buildings, "roads": roads, "green": green, "stations": stations}
+    _save(f"ward_{zone}.json", out)
+    return f"{len(buildings)} buildings, {len(roads)} roads, {len(green)} parks/water within {radius} m of {zone}"

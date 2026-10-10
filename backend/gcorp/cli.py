@@ -340,6 +340,9 @@ def cmd_council(args, eng):
 
 def cmd_data(args, eng):
     from . import data
+    if args.action == "ward":
+        report = {"ward": data.pull_ward(args.zone)}
+        return _out(args, report, lambda r: console.print(f"[bold]ward[/] {r['ward']}"))
     report = data.pull(online=not args.offline)
     _out(args, report, lambda r: [console.print(f"[bold]{k:<10}[/] {v}") for k, v in r.items()])
 
@@ -376,7 +379,8 @@ def main(argv: list[str] | None = None) -> int:
     lg.add_argument("row", nargs="?")
     sub.add_parser("council", help="role contracts")
     d = sub.add_parser("data", help="data pipeline")
-    d.add_argument("action", choices=["pull"])
+    d.add_argument("action", choices=["pull", "ward"])
+    d.add_argument("zone", nargs="?", default="anandvihar")
     d.add_argument("--offline", action="store_true")
     sv = sub.add_parser("serve", help="run the engine in the foreground (port 8000)")
     sv.add_argument("--port", type=int, default=8000)
