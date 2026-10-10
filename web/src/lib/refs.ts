@@ -27,7 +27,7 @@ export function ledgerDisplay(id: string) {
   if (!row) return id;
   const n = Number(row.value);
   if (row.unit?.startsWith("fraction") && !Number.isNaN(n)) return `${fmt(n * 100)}%`;
-  if (row.value.length > 18) return row.label.split(" ").slice(0, 3).join(" ");
+  if (row.value.length > 26) return row.label.split(" ").slice(0, 3).join(" ");
   return row.value;
 }
 

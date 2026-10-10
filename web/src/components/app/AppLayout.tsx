@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
-import { BookOpenCheck, Columns3, LayoutGrid, ListChecks, Plus, Search } from "lucide-react";
+import { BadgeCheck, BookOpenCheck, Columns3, LayoutGrid, ListChecks, Plus, Search, Target, Wind } from "lucide-react";
 import { useEffect } from "react";
 import { cn } from "@/lib/cn";
 import { useRunList, useRuns } from "@/store/runs";
@@ -12,7 +12,10 @@ import { CommandPalette } from "./CommandPalette";
 const NAV = [
   { to: "/app", label: "Overview", icon: LayoutGrid, end: true },
   { to: "/app/assessments", label: "Assessments", icon: ListChecks },
+  { to: "/app/plan", label: "Plan", icon: Target },
   { to: "/app/compare", label: "Compare", icon: Columns3 },
+  { to: "/app/track-record", label: "Track record", icon: BadgeCheck },
+  { to: "/app/breathe", label: "Breathe", icon: Wind },
   { to: "/app/ledger", label: "Source ledger", icon: BookOpenCheck },
 ];
 
@@ -81,7 +84,7 @@ export function AppLayout() {
         </div>
 
         <div className="flex items-center justify-between px-4 py-3 text-[11px] text-faint">
-          <span>Delhi · demo data</span>
+          <span className="flex items-center gap-1.5"><span className={cn("size-1.5 rounded-full", engine === "online" ? "bg-[var(--color-accent)]" : "bg-faint")} />{engine === "online" ? "engine live" : "offline mock"}</span>
           <button onClick={() => setPalette(true)} className="flex items-center gap-0.5 hover:text-fg"><Kbd>Ctrl</Kbd><Kbd>K</Kbd></button>
         </div>
       </aside>

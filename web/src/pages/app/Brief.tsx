@@ -1,6 +1,9 @@
 import { Link, useParams } from "react-router";
 import { ArrowLeft, Link2, Printer } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { HourlyBars } from "@/components/ui/Hourly";
+import { api, type SensorAdvice } from "@/lib/api";
+import { zoneById } from "@/sim/city";
 import { PageHeader } from "@/components/app/AppLayout";
 import { Button } from "@/components/ui/Button";
 import { RefChip, RichText } from "@/components/ui/RichText";
@@ -26,6 +29,8 @@ export default function Brief() {
   const { id } = useParams();
   const b = useRun(id);
   const [copied, setCopied] = useState(false);
+  const [sensors, setSensors] = useState<SensorAdvice | null>(null);
+  useEffect(() => { if (b?.remote && b.record.scenario.zoneId !== "all") api.sensors(b.record.id).then(setSensors).catch(() => setSensors(null)); }, [b?.remote, b?.record.id, b?.record.scenario.zoneId]);
   if (!b) return <div className="p-10 text-mute">Brief not found.</div>;
 
   const rec = b.record;
@@ -88,6 +93,21 @@ export default function Brief() {
             </div>
           )}
         </div>
+
+        {s.hourly && s.hourly.some((v) => v > 0) && (
+          <Section title="When the policy acts (mid estimate, AQI points by hour)">
+            <HourlyBars values={s.hourly} highlight={(() => { const i = s.hourly!.indexOf(Math.max(...s.hourly!)); return [i, i + 1] as [number, number]; })()} height={90} />
+          </Section>
+        )}
+
+        {sensors && sensors.candidates[0] && (
+          <Section title="Where one more sensor helps most">
+            <p className="text-[14px] leading-relaxed">
+              One sensor (<RefChip refId={sensors.unitCostRef} />) near cell ({sensors.candidates[0].x}, {sensors.candidates[0].z}) in {zoneById(sensors.zone)?.name ?? sensors.zone} narrows this decision's uncertainty band by about <strong>{Math.round(sensors.candidates[0].reduction * 100)}%</strong>.
+            </p>
+            <p className="mt-1 text-[12.5px] text-mute">Value of information: the simulator re-runs with a hypothetical station at each candidate cell and keeps the one that shrinks the band most.</p>
+          </Section>
+        )}
 
         <Section title="Findings (accepted claims only)">
           <ul className="space-y-3">
