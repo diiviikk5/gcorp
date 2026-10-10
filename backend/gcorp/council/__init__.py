@@ -86,6 +86,35 @@ class RuleBackend:
     def drafts(self, agent: str, ctx: Context) -> list[Draft]:
         return getattr(self, f"_{agent}", lambda _c: [])(ctx)
 
+    # -- source analyst: is the target big enough? ----------------------------
+    def _apportionment(self, c: Context) -> list[Draft]:
+        s, sm = c.scenario, c.sim.summary
+        refs = ["L-001", "L-002"] if s.vehicle_class in VEHICLES else ["L-004"] if s.vehicle_class == "construction" else ["L-005"] if s.vehicle_class == "industry" else ["L-006"]
+        cite = " ".join(f"[[{r}]]" for r in refs)
+        out = []
+        if sm.ceiling_pct < 3:
+            out.append(Draft("apportionment", f"Low leverage. The targeted source is a small slice of local PM2.5 {cite}, so even full compliance tops out at [[sim:ceiling]]. Bigger sources should be compared first.", refs))
+        else:
+            out.append(Draft("apportionment", f"The targeted source is a material share of local PM2.5 {cite}. Ceiling at full compliance: [[sim:ceiling]]. Leverage is real; the debate should be about compliance and displacement.", refs))
+        z = c.zone
+        if z and z.character == "transit" and s.vehicle_class in VEHICLES:
+            out.append(Draft("apportionment", f"{z.name} is a transit zone where vehicles weigh more than the city mean [[L-033]], so city-wide shares understate this lever here.", ["L-033"], scope="zone", focus=(1, 0)))
+        return out
+
+    # -- externalities: what the border can't stop -----------------------------
+    def _externalities(self, c: Context) -> list[Draft]:
+        s = c.scenario
+        month = int(str(s.value("startDate"))[5:7]) if s.value("startDate") else 0
+        regional = float(s.num("regionalPct", 25))
+        from .. import ledger
+        fires = ledger.get("L-034")
+        fire_ref = " Fire counts upwind [[L-034]] confirm the season." if fires else ""
+        if month in (10, 11, 12, 1):
+            peak = max(regional, 40.0)
+            return [Draft("externalities", "Stubble season. On a peak smoke day regional transport carries [[L-007]] of PM2.5, which this policy cannot touch. Testing the peak day, not the monthly mean [[L-032]]." + fire_ref
+                          + " Expect the ceiling on local improvement to fall.", ["L-007", "L-032"] + (["L-034"] if fires else []), changes={"regionalPct": peak}, focus=(-4, -3))]
+        return [Draft("externalities", "Outside stubble season regional transport is a minor share [[L-032]]; local levers keep most of their reach.", ["L-032"])]
+
     # -- engineer: how much do emissions change -------------------------------
     def _engineer(self, c: Context) -> list[Draft]:
         s = c.scenario

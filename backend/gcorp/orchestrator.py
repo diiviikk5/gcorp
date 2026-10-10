@@ -28,7 +28,7 @@ from .scenario import Scenario
 from .simulator import simulate
 
 RUNS = Path(__file__).resolve().parent.parent / "runs"
-ORDER = ["engineer", "epidemiologist", "economist", "skeptic"]
+ORDER = ["apportionment", "engineer", "epidemiologist", "economist", "externalities", "skeptic"]
 
 
 @dataclass
@@ -59,6 +59,7 @@ class Run:
             "scenario": self.scenario.to_json(), "events": self.events, "claims": self.claims,
             "sims": {str(k): v if grids else {kk: vv for kk, vv in v.items() if kk not in ("before", "afterLo", "afterHi", "uncertainty")} for k, v in self.sims.items()},
             "finalOverrides": self.overrides, "duration": self.duration, "observed": self.observed,
+            "confidence": confidence(self) if self.sims else None,
         }
 
 
@@ -144,6 +145,47 @@ def _debate(run: Run, rec: Recorder, drafts: list[Draft]) -> dict[str, float | s
     return changes
 
 
+def confidence(run: Run) -> dict:
+    """Epistemic confidence from things we can measure, not from vibes.
+
+    - coverage:     sensor coverage of the zone (thin data widens the band)
+    - sources:      share of cited rows that are verified (live pulls) vs demo
+    - assumptions:  share of inputs the planner stated vs assumed
+    - stability:    how much the debate moved the answer (round 1 vs final)
+    - open:         unresolved [ASK] and rejected claims
+    """
+    sims = run.sims
+    first, final = sims[1]["summary"], sims[max(sims)]["summary"]
+    cov = {"good": 1.0, "thin": 0.6, "none": 0.3}.get(final["coverage"], 0.8)
+    cited = {c["ledgerRef"] for c in run.claims.values() if c.get("ledgerRef") and c["status"] == "accepted"}
+    rows = [ledger.get(r) for r in cited if ledger.get(r)]
+    verified = sum(1 for r in rows if r.get("status") == "verified") / len(rows) if rows else 0.0
+    params = run.scenario.params.values()
+    stated = sum(1 for p in params if p.origin == "stated") / max(1, len(list(run.scenario.params.values())))
+    mid0 = (first["deltaLo"] + first["deltaHi"]) / 2
+    mid1 = (final["deltaLo"] + final["deltaHi"]) / 2
+    moved = abs(mid1 - mid0) / mid0 if mid0 > 0.1 else 0.0
+    asks = sum(1 for c in run.claims.values() if c["status"] == "ask")
+    rejected = sum(1 for c in run.claims.values() if c["status"] == "rejected")
+    score = 0.3 * cov + 0.25 * verified + 0.2 * stated + 0.25 * (1 - min(1.0, moved)) - 0.04 * asks - 0.02 * rejected
+    score = max(0.0, min(1.0, score))
+    grade = "High" if score >= 0.7 else "Medium" if score >= 0.45 else "Low"
+    reasons = []
+    if cov < 1:
+        reasons.append("sensor coverage in the zone is thin")
+    if verified < 0.5:
+        reasons.append("most cited sources are demo rows, not verified pulls")
+    if stated < 0.5:
+        reasons.append("most inputs are assumptions, not stated by the planner")
+    if moved > 0.35:
+        reasons.append("the debate moved the estimate a lot: treat it as high variance")
+    if asks:
+        reasons.append(f"{asks} open question{'s' if asks > 1 else ''}")
+    return {"score": round(score, 2), "grade": grade, "highVariance": moved > 0.35,
+            "components": {"coverage": cov, "sources": round(verified, 2), "assumptions": round(stated, 2), "stability": round(1 - min(1.0, moved), 2), "openQuestions": asks, "rejected": rejected},
+            "reasons": reasons}
+
+
 def _brief(run: Run) -> str:
     sc, sim = run.current, run.sims[max(run.sims)]
     s = sim["summary"]
@@ -156,6 +198,8 @@ def _brief(run: Run) -> str:
     lines += [f"- **{AGENTS[c['agent']]['name']}:** {c['text']}" for c in acc]
     if asks:
         lines += ["", "## Open questions"] + [f"- [ASK] {c['text']}" for c in asks]
+    conf = confidence(run)
+    lines += ["", f"## Confidence: {conf['grade']} ({conf['score']:.2f})" + (" · high variance" if conf["highVariance"] else "")] + [f"- {r}" for r in conf["reasons"]]
     lines += ["", "## Assumptions"] + [f"- {p.label}: {p.value}{p.unit or ''} ({p.origin})" for p in sc.params.values() if p.origin != "stated"]
     if rej:
         lines += ["", "## Excluded"] + [f"- ~~{c['text']}~~ — {c['reason']}" for c in rej]
