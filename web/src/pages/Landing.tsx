@@ -203,6 +203,40 @@ function Receipts() {
   );
 }
 
+function Doors() {
+  const lines = [
+    ["$", "gcorp run \"Ban diesel trucks in Anand Vihar at night\" --watch"],
+    ["", "Engineer        opens L-011 · diversion 30%"],
+    ["", "                └ ACCEPTED  L-011 resolves and the scope matches"],
+    ["", "Engineer        Trucks are the largest source in Anand Vihar"],
+    ["!", "                └ REJECTED  L-002 is city-wide; scope mismatch"],
+    ["", "                ↻ displaced activity 0 → 30 · re-simulating"],
+    ["$", "gcorp ask r-21e7 \"ANPR cameras at every entry point\""],
+    ["", "GCORP_RUN_OK  −3 to −14 AQI · 7 claims, 1 rejected"],
+  ];
+  return (
+    <section className="border-t border-[var(--edge)]">
+      <div className="mx-auto grid max-w-[1240px] items-center gap-14 px-6 py-28 lg:grid-cols-2">
+        <motion.div {...rise}>
+          <span className="font-mono text-[11px] tracking-wider text-[var(--ink)]">TWO DOORS, ONE ENGINE</span>
+          <h2 className="mt-4 text-[clamp(34px,4.2vw,58px)] leading-[1.02]">Watch the council <em>work.</em></h2>
+          <p className="mt-5 max-w-md text-[15.5px] leading-relaxed text-[var(--ink)]">In the browser, the Chamber shows each agent at its desk, the ledger drawer it opens and the verifier's stamp. In the terminal, the same run streams live.</p>
+          <div className="mt-8 flex gap-3">
+            <Link to={LIVE_RUN.replace("?live=1", "?live=1&view=chamber")} className="btn-accent inline-flex h-10 items-center gap-2 rounded-full px-5 text-[14px] font-medium transition-colors">Open the Chamber <ArrowRight className="size-4" /></Link>
+          </div>
+        </motion.div>
+        <motion.div {...rise} className="border border-[var(--ink-hi)] bg-[var(--top)] p-5 font-mono text-[12px] leading-[1.9]">
+          {lines.map(([k, t], i) => (
+            <div key={i} className={cn("whitespace-pre", k === "$" ? "text-[var(--ink-hi)]" : k === "!" ? "text-[var(--accent)]" : "text-[var(--ink)]")}>
+              {k === "$" && <span className="text-[var(--accent)]">$ </span>}{t}
+            </div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
 function Honest() {
   const s = useFlagship();
   const pct = (v: number) => ((v - (s.zoneBefore - 80)) / 100) * 100;
@@ -354,6 +388,7 @@ export default function Landing() {
       <Problem />
       <How />
       <Receipts />
+      <Doors />
       <Honest />
       <Replay />
       <Stack />
