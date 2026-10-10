@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
-import { BookOpenCheck, ChevronsUpDown, Columns3, Command, LayoutGrid, ListChecks, Plus, Search, Settings2 } from "lucide-react";
+import { BookOpenCheck, Columns3, LayoutGrid, ListChecks, Plus, Search } from "lucide-react";
 import { useEffect } from "react";
 import { cn } from "@/lib/cn";
 import { useRuns } from "@/store/runs";
@@ -35,24 +35,13 @@ export function AppLayout() {
 
   return (
     <div className="flex h-dvh overflow-hidden bg-bg text-fg">
-      <aside className="hidden w-[244px] shrink-0 flex-col border-r border-line bg-s1/60 md:flex">
+      <aside className="hidden w-[232px] shrink-0 flex-col border-r border-line md:flex">
         <div className="flex h-12 items-center px-3.5">
           <NavLink to="/" className="rounded-md px-1 py-1 hover:bg-white/[0.04]"><Logo /></NavLink>
         </div>
 
-        <div className="px-2.5">
-          <button className="flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left hover:bg-white/[0.04]">
-            <span className="grid size-6 place-items-center rounded-md bg-gradient-to-br from-[#ffb36b] to-[#ff6b8a] text-[10px] font-bold text-black/80">DL</span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-[13px] font-medium">Delhi · NCT</span>
-              <span className="block truncate text-[11px] text-faint">Urban planning cell</span>
-            </span>
-            <ChevronsUpDown className="size-3.5 text-faint" />
-          </button>
-        </div>
-
-        <div className="mt-3 flex gap-1.5 px-2.5">
-          <NavLink to="/app/new" className="flex h-8 flex-1 items-center gap-2 rounded-lg bg-white/[0.06] px-2.5 text-[13px] font-medium ring-1 ring-inset ring-white/[0.08] transition-colors hover:bg-white/[0.09]">
+        <div className="mt-2 flex gap-1.5 px-2.5">
+          <NavLink to="/app/new" className="flex h-8 flex-1 items-center gap-2 rounded-lg px-2.5 text-[13px] font-medium ring-1 ring-inset ring-white/[0.1] transition-colors hover:bg-white/[0.05]">
             <Plus className="size-3.5" /> New assessment <Kbd className="ml-auto">N</Kbd>
           </NavLink>
           <button onClick={() => setPalette(true)} className="grid size-8 place-items-center rounded-lg text-mute ring-1 ring-inset ring-white/[0.08] hover:bg-white/[0.05] hover:text-fg" aria-label="Search">
@@ -74,7 +63,7 @@ export function AppLayout() {
           ))}
         </nav>
 
-        <div className="mt-6 px-4 eyebrow !text-[10px]">Recent runs</div>
+        <div className="mt-7 px-4 text-[11px] text-faint">Recent</div>
         <div className="mt-1.5 flex-1 space-y-px overflow-y-auto px-2.5">
           {runs.slice(0, 8).map((r) => (
             <NavLink
@@ -82,25 +71,15 @@ export function AppLayout() {
               to={`/app/runs/${r.id}`}
               className={({ isActive }) => cn("group flex h-8 items-center gap-2 rounded-md px-2 text-[12.5px] transition-colors", isActive ? "bg-white/[0.07] text-fg" : "text-mute hover:bg-white/[0.04] hover:text-fg")}
             >
-              <span className={cn("size-1.5 shrink-0 rounded-full", r.kind === "replay" ? "bg-a-skeptic" : r.scenario.warnings.some((w) => w.level === "block") ? "bg-bad" : "bg-ok")} />
               <span className="truncate">{r.scenario.title.split(" · ")[0]}</span>
               <span className="ml-auto shrink-0 text-[10.5px] text-faint">{r.scenario.title.split(" · ")[1]}</span>
             </NavLink>
           ))}
         </div>
 
-        <div className="border-t border-line p-2.5">
-          <button onClick={() => setPalette(true)} className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-[12px] text-mute hover:bg-white/[0.04] hover:text-fg">
-            <Command className="size-3.5" /> Command menu <span className="ml-auto flex gap-0.5"><Kbd>Ctrl</Kbd><Kbd>K</Kbd></span>
-          </button>
-          <div className="mt-1 flex items-center gap-2.5 rounded-md px-2 py-1.5">
-            <span className="grid size-6 place-items-center rounded-full bg-s4 text-[10px] font-semibold text-mute ring-1 ring-line-2">AP</span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-[12.5px]">A. Planner</span>
-              <span className="block truncate text-[10.5px] text-faint">Demo workspace</span>
-            </span>
-            <Settings2 className="size-3.5 text-faint" />
-          </div>
+        <div className="flex items-center justify-between px-4 py-3 text-[11px] text-faint">
+          <span>Delhi · demo data</span>
+          <button onClick={() => setPalette(true)} className="flex items-center gap-0.5 hover:text-fg"><Kbd>Ctrl</Kbd><Kbd>K</Kbd></button>
         </div>
       </aside>
 

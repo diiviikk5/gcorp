@@ -1,7 +1,7 @@
 import { useDeferredValue, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
-import { AlertTriangle, ArrowLeft, ArrowRight, Ban, Check, Cpu, Info, MapPin, Sparkles, Wand2, Workflow } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, Ban, Check, Cpu, Info, MapPin, Sparkles, Wand2 } from "lucide-react";
 import { PageHeader } from "@/components/app/AppLayout";
 import { IsoCity } from "@/components/city/IsoCity";
 import { Button } from "@/components/ui/Button";
@@ -79,9 +79,9 @@ export default function NewAssessment() {
                 <p className="mt-1.5 max-w-xl text-[14px] text-mute">Zones are ranked by today's baseline. Coverage tells you how much the sensors can back up the result; thin coverage means a wider, more honest range.</p>
                 <button
                   onClick={() => setZone("all")}
-                  className={cn("mt-6 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left ring-1 ring-inset transition-colors", zone === "all" ? "bg-brand/[0.07] ring-brand/40" : "ring-line hover:bg-white/[0.02]")}
+                  className={cn("mt-6 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left ring-1 ring-inset transition-colors", zone === "all" ? "bg-white/[0.04] ring-white/40" : "ring-line hover:bg-white/[0.02]")}
                 >
-                  <MapPin className="size-4 text-brand" />
+                  <MapPin className="size-4 text-mute" />
                   <span className="text-[13.5px] font-medium">All of Delhi</span>
                   <span className="text-[12px] text-mute">City-wide policies such as odd-even</span>
                   <AqiPill value={zoneBaseline("all")} className="ml-auto" />
@@ -91,7 +91,7 @@ export default function NewAssessment() {
                     <button
                       key={z.id}
                       onClick={() => setZone(z.id)}
-                      className={cn("group rounded-xl p-3.5 text-left ring-1 ring-inset transition-all", zone === z.id ? "bg-brand/[0.07] ring-brand/40" : "ring-line hover:bg-white/[0.02] hover:ring-line-2")}
+                      className={cn("group rounded-xl p-3.5 text-left ring-1 ring-inset transition-all", zone === z.id ? "bg-white/[0.04] ring-white/40" : "ring-line hover:bg-white/[0.02] hover:ring-line-2")}
                     >
                       <div className="flex items-center justify-between">
                         <div>
@@ -114,7 +114,7 @@ export default function NewAssessment() {
               <motion.div key="policy" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }}>
                 <h1 className="text-[26px] font-semibold tracking-[-0.03em]">Describe the policy in plain English</h1>
                 <p className="mt-1.5 max-w-xl text-[14px] text-mute">The compiler turns it into typed parameters. Anything you don't say is marked as an assumption, never silently guessed.</p>
-                <div className="mt-6 rounded-xl bg-s1 ring-1 ring-inset ring-line-2 focus-within:ring-brand/50">
+                <div className="mt-6 rounded-xl bg-s1 ring-1 ring-inset ring-line-2 focus-within:ring-white/40">
                   <textarea
                     autoFocus
                     value={text}
@@ -165,14 +165,14 @@ export default function NewAssessment() {
                           step={t.step}
                           value={v}
                           onChange={(e) => setOverrides((o) => ({ ...o, [t.key]: Number(e.target.value) }))}
-                          className="mt-3 w-full accent-[#8fb3ff]"
+                          className="mt-3 w-full accent-white"
                         />
                       </div>
                     );
                   })}
                 </div>
                 <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-xl bg-white/[0.02] p-4 text-[13px] ring-1 ring-inset ring-line">
-                  <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} className="mt-0.5 size-4 accent-[#8fb3ff]" />
+                  <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} className="mt-0.5 size-4 accent-white" />
                   <span className="text-mute">
                     I understand the output is an <span className="text-fg">estimate under stated assumptions</span>, given as a range, not a forecast. Unsourced claims will surface as open questions rather than appear in the brief.
                   </span>
@@ -209,7 +209,7 @@ export default function NewAssessment() {
 
           <div className="rounded-2xl ring-1 ring-inset ring-line">
             <div className="flex items-center justify-between border-b border-line px-4 py-3">
-              <span className="flex items-center gap-2 text-[13px] font-medium"><Wand2 className="size-4 text-a-compiler" /> Compiler preview</span>
+              <span className="flex items-center gap-2 text-[13px] font-medium"><Wand2 className="size-4 text-mute" /> Compiler preview</span>
               <span className="font-mono text-[10.5px] text-faint">{scenario ? `fp ${scenario.fingerprint}` : "scenario.json"}</span>
             </div>
             {!scenario ? (
@@ -247,15 +247,6 @@ export default function NewAssessment() {
             )}
           </div>
 
-          <div className="rounded-2xl p-4 text-[12px] ring-1 ring-inset ring-line">
-            <div className="flex items-center gap-2 text-[13px] font-medium"><Workflow className="size-4 text-mute" /> What runs</div>
-            <ul className="mt-2.5 space-y-1.5 text-mute">
-              <li className="flex justify-between"><span>Orchestrator</span><span className="text-fg">AgentCore Runtime</span></li>
-              <li className="flex justify-between"><span>Scenario variants</span><span className="text-fg">Step Functions · Map ×3</span></li>
-              <li className="flex justify-between"><span>Agents</span><span className="text-fg">Strands · 5 roles + verifier</span></li>
-              <li className="flex justify-between"><span>Provenance</span><span className="text-fg">Lambda + DynamoDB</span></li>
-            </ul>
-          </div>
         </div>
       </div>
     </div>
