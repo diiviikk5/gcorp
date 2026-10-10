@@ -45,7 +45,7 @@ def check(text: str, scope: str = "city") -> Verdict:
             return Verdict("rejected", f"Cites {r}, which is not in the ledger.", rule="missing-row")
 
     if OUTCOME.search(bare) and not any(ledger.get(r) and ledger.get(r)["value"] != "not found" for r in ledger_refs):
-        return Verdict("ask", "No local dose-response or outcome data [[L-022]]. Moved to open questions, kept out of the brief.", "L-022", rule="outcome-unsourced")
+        return Verdict("ask", "No local dose-response or outcome data in the ledger (row L-022 is empty). Moved to open questions, kept out of the brief.", "L-022", rule="outcome-unsourced")
 
     if ledger_refs and scope in LEVEL_RANK:
         best = max(LEVEL_RANK[ledger.get(r)["scopeLevel"]] for r in ledger_refs)
