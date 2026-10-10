@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
-import { BadgeCheck, BookOpenCheck, Columns3, LayoutGrid, ListChecks, Plus, Search, Target, Wind } from "lucide-react";
+import { BadgeCheck, BookOpenCheck, Building2, Columns3, LayoutGrid, ListChecks, Plus, Search, Target, Wind } from "lucide-react";
 import { useEffect } from "react";
 import { cn } from "@/lib/cn";
 import { useRunList, useRuns } from "@/store/runs";
@@ -69,7 +69,14 @@ export function AppLayout() {
           ))}
         </nav>
 
-        <div className="mt-7 px-4 text-[11px] text-faint">Recent</div>
+        <div className="mt-3 px-2.5">
+          <NavLink to="/council" className="flex h-9 items-center gap-2.5 rounded-md border border-fg/80 px-2 text-[13px] font-medium transition-colors hover:bg-fg hover:text-bg">
+            <Building2 className="size-4" strokeWidth={1.8} /> Council House
+            <span className="ml-auto font-mono text-[10px] opacity-60">3D</span>
+          </NavLink>
+        </div>
+
+        <div className="mt-6 px-4 text-[11px] text-faint">Recent</div>
         <div className="mt-1.5 flex-1 space-y-px overflow-y-auto px-2.5">
           {runs.slice(0, 8).map((r) => (
             <NavLink

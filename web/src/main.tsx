@@ -5,6 +5,7 @@ import "./styles/index.css";
 import { AppLayout } from "./components/app/AppLayout";
 
 const Landing = lazy(() => import("./pages/Landing"));
+const CouncilHouse = lazy(() => import("./pages/CouncilHouse"));
 const Overview = lazy(() => import("./pages/app/Overview"));
 const Assessments = lazy(() => import("./pages/app/Assessments"));
 const NewAssessment = lazy(() => import("./pages/app/NewAssessment"));
@@ -21,6 +22,7 @@ const S = (el: React.ReactNode) => <Suspense fallback={<Fallback />}>{el}</Suspe
 
 const router = createBrowserRouter([
   { path: "/", element: S(<Landing />) },
+  { path: "/council", element: S(<CouncilHouse />) },
   {
     path: "/app",
     element: <AppLayout />,

@@ -116,6 +116,7 @@ export default function RunView() {
             <button onClick={() => { seek(duration); setPlaying(false); }} className="grid size-7 place-items-center rounded-md text-mute hover:bg-black/5 hover:text-fg" title="Skip to end"><FastForward className="size-3.5" /></button>
             <Segmented value={String(speed)} onChange={(v) => setSpeed(Number(v))} options={[{ value: "1", label: "1×" }, { value: "2", label: "2×" }, { value: "4", label: "4×" }]} className="!ring-0 !bg-transparent" />
           </div>
+          {bundle.remote && <Button size="sm" variant="outline" to={`/council?run=${rec.id}&live=1`}>Watch in Council House</Button>}
           <Button size="sm" variant="ghost" onClick={() => navigator.clipboard?.writeText(location.origin + `/app/runs/${rec.id}/brief`)} title="Copy brief link"><Share2 className="size-3.5" /></Button>
           <Button size="sm" variant={d.complete ? "primary" : "secondary"} to={`/app/runs/${rec.id}/brief`} className={cn(!d.complete && "pointer-events-none opacity-50")}>
             <FileText className="size-3.5" /> Open brief
