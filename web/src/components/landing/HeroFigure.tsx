@@ -45,7 +45,7 @@ function lots(x0: number, y0: number, x1: number, y1: number, rnd: () => number,
 
 export function HeroFigure({ policy, onTurn, aspect = 1.7 }: { policy: boolean; onTurn?: (i: number) => void; aspect?: number }) {
   const K = useMemo(
-    () => frame([[0, 0, 0], [PLATE.w, 0, 0], [0, PLATE.d, 0], [PLATE.w, PLATE.d, 0], [CENTER[0], CENTER[1], COUNCIL_Z + 40], [0, 0, 160]], 0.015, aspect),
+    () => frame([[0, 0, 0], [PLATE.w, 0, 0], [0, PLATE.d, 0], [PLATE.w, PLATE.d, 0], [CENTER[0], CENTER[1], COUNCIL_Z + 40], [0, 0, 160]], 0.05, aspect),
     [aspect],
   );
   const svgRef = useRef<HTMLDivElement>(null);

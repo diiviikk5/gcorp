@@ -70,16 +70,16 @@ function Hero() {
         ))}
 
         {/* 1 · title */}
-        <div className="relative z-10 shrink-0 px-6 pt-[88px] text-center">
+        <div className="relative z-10 shrink-0 px-6 pt-[112px] text-center">
           <motion.h1
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.2, 0.7, 0.2, 1] }}
-            className="text-[clamp(30px,4.2vw,68px)] leading-none lg:whitespace-nowrap"
+            className="text-[clamp(30px,3.4vw,58px)] leading-none lg:whitespace-nowrap"
           >
             Test an air policy <em>before</em> the city pays.
           </motion.h1>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7, delay: 0.2 }} className="mt-5 flex flex-wrap items-center justify-center gap-3">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7, delay: 0.2 }} className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <Link to="/app/new" className="btn-accent inline-flex h-10 items-center gap-2 rounded-full px-5 text-[14px] font-medium transition-colors">
               Pre-check a policy <ArrowRight className="size-4" />
             </Link>
@@ -89,36 +89,24 @@ function Hero() {
           </motion.div>
         </div>
 
-        {/* 2 · the drawing takes whatever height is left */}
-        <div className="relative aspect-[1.3] w-full px-2 py-3 md:aspect-auto md:min-h-0 md:flex-1 md:px-4">
-          <HeroFigure policy={policy} aspect={1.75} />
+        {/* 2 · the drawing takes whatever height is left, with air around it */}
+        <div className="relative aspect-[1.3] w-full px-2 pb-2 pt-10 md:aspect-auto md:min-h-0 md:flex-1 md:px-10">
+          <HeroFigure policy={policy} aspect={1.9} />
         </div>
 
-        {/* 3 · caption + title block */}
-        <div className="relative z-10 flex shrink-0 flex-wrap items-end justify-between gap-4 px-6 pb-5">
-          <div className="hidden font-mono text-[10.5px] leading-relaxed tracking-[0.12em] text-[var(--ink)] sm:block">
-            <div className="text-[var(--ink-hi)]">FIG. 01</div>
-            <div>ANAND VIHAR · EAST DELHI</div>
-            <div>23:00 IST · AXONOMETRIC, NTS</div>
-          </div>
-          <div className="w-full border border-[var(--ink-hi)] bg-[var(--bg)] font-mono text-[11px] sm:w-[300px]">
-            <div className="flex items-center justify-between border-b border-[var(--ink-hi)] px-3 py-2">
-              <span className="wordmark font-sans text-[14px] text-[var(--ink-hi)]">gcorp</span>
-              <span className="tracking-[0.12em] text-[var(--ink)]">SHEET 01/04</span>
-            </div>
-            <div className="grid grid-cols-2">
-              <div className="border-r border-[var(--ink-hi)] px-3 py-2">
-                <div className="text-[9.5px] tracking-[0.12em] text-[var(--ink)]">AQI NOW</div>
-                <div className="mt-0.5 text-[15px] text-[var(--ink-hi)] tabular">{fmt(s.zoneBefore)}</div>
-              </div>
-              <div className="px-3 py-2">
-                <div className="text-[9.5px] tracking-[0.12em] text-[var(--ink)]">NIGHT TRUCK BAN</div>
-                <div className={cn("mt-0.5 text-[15px] tabular transition-colors", policy ? "text-[var(--accent)]" : "text-[var(--ink)]")}>
-                  {policy ? `${fmt(s.zoneAfterLo)}–${fmt(s.zoneAfterHi)}` : "—"}
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* 3 · one aligned footer line: caption left, title block right */}
+        <div className="relative z-10 flex shrink-0 flex-wrap items-center justify-between gap-4 border-t border-[var(--edge)] px-6 py-3.5 font-mono text-[10.5px] tracking-[0.12em] text-[var(--ink)]">
+          <span className="hidden sm:block"><span className="text-[var(--ink-hi)]">FIG. 01</span> · ANAND VIHAR, EAST DELHI · 23:00 IST · AXONOMETRIC</span>
+          <span className="flex items-center gap-5">
+            <span>AQI NOW <span className="ml-1.5 text-[12px] text-[var(--ink-hi)] tabular">{fmt(s.zoneBefore)}</span></span>
+            <span className="h-3 w-px bg-[var(--edge)]" />
+            <span>
+              NIGHT TRUCK BAN
+              <span className={cn("ml-1.5 inline-block min-w-[64px] text-[12px] tabular transition-colors", policy ? "text-[var(--accent)]" : "text-[var(--ink)]")}>
+                {policy ? `${fmt(s.zoneAfterLo)}–${fmt(s.zoneAfterHi)}` : "off"}
+              </span>
+            </span>
+          </span>
         </div>
       </div>
     </section>
