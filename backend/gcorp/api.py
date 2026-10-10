@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
+import time
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -32,6 +34,28 @@ SEEDS = [
      {"label": "Observed during Jan 1–15, 2016", "deltaPct": 2, "ledgerRef": "L-018"}),
     ("Ban diesel autos in ITO for six months", "ito", "assessment", "2026-10-08T09:12:00Z", None),
 ]
+
+
+_last_hit = [time.time()]
+
+
+@app.middleware("http")
+async def _touch(request, call_next):
+    _last_hit[0] = time.time()
+    return await call_next(request)
+
+
+async def _idle_watch(limit: float) -> None:
+    while True:
+        await asyncio.sleep(30)
+        if time.time() - _last_hit[0] > limit:
+            os._exit(0)  # daemon mode: auto-shutdown after idle (gstack model)
+
+
+@app.on_event("startup")
+async def _idle() -> None:
+    if os.environ.get("GCORP_IDLE_EXIT"):
+        asyncio.get_event_loop().create_task(_idle_watch(float(os.environ["GCORP_IDLE_EXIT"])))
 
 
 @app.on_event("startup")
@@ -155,3 +179,10 @@ def track_record() -> dict:
 def sensors(run_id: str) -> dict:
     r = _get(run_id)
     return _sensor_advice(r.scenario.text, r.scenario.zone_id)
+
+
+@app.post("/api/reload")
+def reload_data() -> dict:
+    """Pick up rows from `gcorp data pull` without restarting."""
+    ledger.reload()
+    return {"ledgerRows": len(ledger.all_rows())}
