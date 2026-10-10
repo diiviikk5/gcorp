@@ -43,10 +43,10 @@ function lots(x0: number, y0: number, x1: number, y1: number, rnd: () => number,
   return out;
 }
 
-export function HeroFigure({ policy, onTurn }: { policy: boolean; onTurn?: (i: number) => void }) {
+export function HeroFigure({ policy, onTurn, aspect = 1.7 }: { policy: boolean; onTurn?: (i: number) => void; aspect?: number }) {
   const K = useMemo(
-    () => frame([[0, 0, 0], [PLATE.w, 0, 0], [0, PLATE.d, 0], [PLATE.w, PLATE.d, 0], [CENTER[0], CENTER[1], COUNCIL_Z + 40], [0, 0, 160]], 0.06, 1.7),
-    [],
+    () => frame([[0, 0, 0], [PLATE.w, 0, 0], [0, PLATE.d, 0], [PLATE.w, PLATE.d, 0], [CENTER[0], CENTER[1], COUNCIL_Z + 40], [0, 0, 160]], 0.015, aspect),
+    [aspect],
   );
   const svgRef = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
@@ -70,7 +70,7 @@ export function HeroFigure({ policy, onTurn }: { policy: boolean; onTurn?: (i: n
     const rnd = seeded(42);
     let s = "";
     // plate + sidewalk insets
-    s += box(0, 0, 0, PLATE.w, PLATE.d, 10);
+    s += `<g class="ink" style="--d:0ms">` + box(0, 0, 0, PLATE.w, PLATE.d, 10);
     s += `<g transform="${TOP(0, 0, 10)}">
       <rect class="detail" x="8" y="8" width="${PLATE.w - 16}" height="${PLATE.d - 16}" rx="6"/>
       <rect class="face recess" x="0" y="${ROAD.y0}" width="${PLATE.w}" height="${ROAD.y1 - ROAD.y0}"/>
@@ -78,10 +78,10 @@ export function HeroFigure({ policy, onTurn }: { policy: boolean; onTurn?: (i: n
       ${Array.from({ length: 26 }, (_, i) => `<line class="detail" x1="${i * 20 + 4}" y1="${(ROAD.y0 + ROAD.y1) / 2}" x2="${i * 20 + 14}" y2="${(ROAD.y0 + ROAD.y1) / 2}"/>`).join("")}
       ${Array.from({ length: 20 }, (_, i) => `<line class="detail" x1="${(CROSS.x0 + CROSS.x1) / 2}" y1="${i * 20 + 4}" x2="${(CROSS.x0 + CROSS.x1) / 2}" y2="${i * 20 + 14}"/>`).join("")}
       ${Array.from({ length: 8 }, (_, i) => `<line class="detail" x1="${CROSS.x0 + 3 + i * 4}" y1="${ROAD.y0 - 10}" x2="${CROSS.x0 + 3 + i * 4}" y2="${ROAD.y0 - 2}"/>`).join("")}
-    </g>`;
+    </g></g>`;
 
-    const building = (b: Lot, wid: number) => {
-      let g = box(b.x, b.y, 10, b.w, b.d, b.h);
+    const building = (b: Lot, wid: number, delay: number) => {
+      let g = `<g class="ink" style="--d:${delay}ms">` + box(b.x, b.y, 10, b.w, b.d, b.h);
       const rows = Math.floor((b.h - 8) / 18);
       const fc = Math.floor((b.w - 6) / 14), sc = Math.floor((b.d - 6) / 14);
       let wf = "", ws = "";
@@ -92,7 +92,7 @@ export function HeroFigure({ policy, onTurn }: { policy: boolean; onTurn?: (i: n
       g += `<g transform="${FRONT(b.x, b.y + b.d, 10 + b.h)}">${wf}</g><g transform="${SIDE(b.x + b.w, b.y + b.d, 10 + b.h)}">${ws}</g>`;
       // roof detail
       if (b.h > 60) g += `<g transform="${TOP(b.x, b.y, 10 + b.h)}"><rect class="detail" x="4" y="4" width="${Math.max(2, b.w - 8)}" height="${Math.max(2, b.d - 8)}"/></g>`;
-      return g;
+      return g + "</g>";
     };
 
     const back = [...lots(16, 16, CROSS.x0 - 8, ROAD.y0 - 12, rnd, 0.12), ...lots(CROSS.x1 + 8, 16, PLATE.w - 14, ROAD.y0 - 12, rnd, 0.3)];
@@ -101,12 +101,12 @@ export function HeroFigure({ policy, onTurn }: { policy: boolean; onTurn?: (i: n
     back.sort(order);
     front.sort(order);
     let backS = "";
-    back.forEach((b, i) => (backS += building(b, i)));
+    back.forEach((b, i) => (backS += building(b, i, 250 + i * 55)));
     let frontS = "";
-    front.forEach((b, i) => (frontS += building(b, i + 1000)));
+    front.forEach((b, i) => (frontS += building(b, i + 1000, 450 + (back.length + i) * 55)));
 
     // sensors (pylons + LED)
-    let sens = "";
+    let sens = `<g class="ink" style="--d:1500ms">`;
     SENSORS.forEach(([x, y, z], i) => {
       sens += box(x, y, z, 4, 4, 44);
       const [cx, cy] = P(x + 2, y + 2, z + 50);
@@ -115,9 +115,19 @@ export function HeroFigure({ policy, onTurn }: { policy: boolean; onTurn?: (i: n
 
     // haze: three blurred planes over the block
     const hz = (z: number, inset: number) => poly([[inset, inset, z], [PLATE.w - inset, inset, z], [PLATE.w - inset, PLATE.d - inset, z], [inset, PLATE.d - inset, z]]);
-    const haze = [[150, 70]].map(([z, ins], i) => `<path class="haze" data-h="${i}" d="${hz(z, ins)}"/>`).join("");
+    sens += "</g>";
+    const haze = `<g class="ink" style="--d:1900ms">` + [[150, 70]].map(([z, ins], i) => `<path class="haze" data-h="${i}" d="${hz(z, ins)}"/>`).join("") + "</g>";
 
-    return { plate: s, back: backS, front: frontS, sens, haze };
+    // survey annotations: leader line + label
+    const note = (pt: V3, dx: number, dy: number, text: string) => {
+      const [x, y] = P(...pt);
+      const ex = x + dx, ey = y + dy, run = dx < 0 ? -64 : 64;
+      return `<circle class="leader-dot" cx="${x}" cy="${y}" r="1.8"/><path class="leader" d="M${x} ${y}L${ex} ${ey}L${ex + run} ${ey}"/>` +
+        `<text class="note" x="${ex + (dx < 0 ? run : 0)}" y="${ey - 5}">${text}</text>`;
+    };
+    const notes = note([PLATE.w, (ROAD.y0 + ROAD.y1) / 2, 10], 30, 44, "NH-24");
+
+    return { plate: s, back: backS, front: frontS, sens, haze, notes };
   }, [K]);
 
   const council = useMemo(() => {
@@ -268,14 +278,14 @@ export function HeroFigure({ policy, onTurn }: { policy: boolean; onTurn?: (i: n
         tilt.current.ty = ((e.clientY - r.top) / r.height - 0.5) * 2;
       }}
       onPointerLeave={() => { tilt.current.tx = 0; tilt.current.ty = 0; }}
-      className="relative h-full w-full [perspective:1800px]"
+      className="drawin relative h-full w-full [perspective:1800px]"
       role="img" aria-label="Isometric city block in Anand Vihar with traffic, air sensors and a council of AI agents above it, wired to the sensors. The night truck ban removes trucks and thins the haze.">
       <div ref={stage} className="absolute inset-0 [transform-style:preserve-3d] [will-change:transform]">
       <svg viewBox={K.viewBox} className={layer} aria-hidden>
         <defs dangerouslySetInnerHTML={{ __html: GLOW_DEFS }} />
         <g dangerouslySetInnerHTML={{ __html: scene.plate + scene.back }} />
       </svg>
-      <svg viewBox={K.viewBox} className={layer} aria-hidden>
+      <svg viewBox={K.viewBox} className={layer + " late"} aria-hidden>
         {vehicles.cr.map((_, i) => (
           <g key={`c${i}`} ref={(el) => { cars.current[i] = el; }} dangerouslySetInnerHTML={{ __html: carSvg }} />
         ))}
@@ -287,7 +297,10 @@ export function HeroFigure({ policy, onTurn }: { policy: boolean; onTurn?: (i: n
         <defs dangerouslySetInnerHTML={{ __html: GLOW_DEFS }} />
         <g dangerouslySetInnerHTML={{ __html: scene.sens + scene.front + scene.haze }} />
       </svg>
-      <svg ref={sky} viewBox={K.viewBox} className={layer} aria-hidden>
+      <svg viewBox={K.viewBox} className={layer + " late"} aria-hidden>
+        <g dangerouslySetInnerHTML={{ __html: scene.notes }} />
+      </svg>
+      <svg ref={sky} viewBox={K.viewBox} className={layer + " late"} aria-hidden>
         <defs dangerouslySetInnerHTML={{ __html: GLOW_DEFS }} />
         <g dangerouslySetInnerHTML={{ __html: council.ringPath + council.wires + council.pulses + council.nodes }} />
       </svg>

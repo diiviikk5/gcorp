@@ -30,7 +30,7 @@ function Nav() {
     <header className="fixed inset-x-0 top-0 z-50">
       <div className="mx-auto mt-3 flex h-12 max-w-[1240px] items-center justify-between rounded-full border border-[var(--edge)] bg-[rgb(242_240_235/0.82)] px-3 pl-4 backdrop-blur-xl">
         <Link to="/" className="flex items-center gap-2 text-[14px] font-medium tracking-tight">
-          <LogoMark className="size-5" /> Gcorp
+          <LogoMark className="size-5" /> <span className="wordmark">gcorp</span>
         </Link>
         <nav className="hidden items-center gap-7 text-[13px] text-[var(--ink)] md:flex">
           <a href="#how" className="hover:text-[var(--ink-hi)]">How it works</a>
@@ -51,57 +51,80 @@ function Hero() {
   const [policy, setPolicy] = useState(false);
 
   useEffect(() => {
-    const t = window.setTimeout(() => setPolicy(true), 4200);
-    return () => window.clearTimeout(t);
+    // The policy toggles itself: trucks leave, the dots thin, the range appears.
+    let on = false;
+    const t = window.setTimeout(function tick() {
+      on = !on;
+      setPolicy(on);
+      timer = window.setTimeout(tick, on ? 7000 : 4000);
+    }, 5200);
+    let timer = t;
+    return () => window.clearTimeout(timer);
   }, []);
 
   return (
-    <section className="relative flex h-[100svh] min-h-[680px] flex-col overflow-hidden pt-24">
-      <div className="relative z-10 mx-auto max-w-[1040px] px-6 text-center">
-        <h1 className="text-[clamp(40px,5.6vw,92px)] leading-[0.92]">
-          <motion.span className="block" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, ease: [0.2, 0.7, 0.2, 1] }}>
-            Test an air policy
-          </motion.span>
-          <motion.span className="block text-[var(--ink)]" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.1, ease: [0.2, 0.7, 0.2, 1] }}>
-            <em>before</em> the city pays.
-          </motion.span>
-        </h1>
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.9, delay: 0.35 }} className="mt-6 flex flex-wrap items-center justify-center gap-3">
-          <Link to="/app/new" className="btn-accent inline-flex h-10 items-center gap-2 rounded-full px-5 text-[14px] font-medium transition-colors">
-            Pre-check a policy <ArrowRight className="size-4" />
-          </Link>
-          <Link to={LIVE_RUN} className="btn-line inline-flex h-10 items-center gap-2 rounded-full px-5 text-[14px] transition-shadow">
-            Watch a live run
-          </Link>
+    <section className="relative p-2.5 md:h-[100svh] md:min-h-[700px]">
+      <div className="relative h-full overflow-hidden rounded-[2px] border border-[var(--ink-hi)]/80 pb-6 md:pb-0">
+        {/* sheet corner ticks */}
+        {["left-2 top-2 border-l border-t", "right-2 top-2 border-r border-t", "left-2 bottom-2 border-l border-b", "right-2 bottom-2 border-r border-b"].map((c) => (
+          <span key={c} className={cn("pointer-events-none absolute size-3 border-[var(--ink-hi)]", c)} />
+        ))}
+
+        {/* the drawing */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
+          className="relative mt-48 aspect-[1.75] w-full md:absolute md:bottom-[1%] md:top-[29%] md:inset-x-[4%] md:mt-0 md:aspect-auto md:w-auto"
+        >
+          <HeroFigure policy={policy} aspect={1.75} />
         </motion.div>
-      </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.4, delay: 0.2, ease: [0.2, 0.7, 0.2, 1] }}
-        className="relative mt-3 min-h-0 flex-1 px-6"
-      >
-        <HeroFigure policy={policy} />
-      </motion.div>
-
-      <div className="relative z-10 flex justify-center px-6 pb-6">
-        <div className="flex items-center gap-4 rounded-full border border-[var(--edge)] bg-[rgb(242_240_235/0.82)] py-1.5 pl-4 pr-1.5 font-mono text-[12px] text-[var(--ink)] backdrop-blur-md">
-          <span className="hidden sm:inline">anand vihar</span>
-          <span className="tabular text-[var(--ink-hi)]">
-            aqi {fmt(s.zoneBefore)} <span className="text-[var(--ink)]">→</span>{" "}
-            <span className={policy ? "accent" : ""}>{policy ? `${fmt(s.zoneAfterLo)}–${fmt(s.zoneAfterHi)}` : "—"}</span>
-          </span>
-          <button
-            onClick={() => setPolicy((p) => !p)}
-            aria-pressed={policy}
-            className={cn("flex items-center gap-2.5 rounded-full py-1.5 pl-3 pr-1.5 font-sans text-[12.5px] transition-colors", policy ? "bg-[var(--accent-dim)] text-[var(--ink-hi)]" : "bg-black/[0.04] text-[var(--ink-hi)] hover:bg-black/[0.07]")}
+        {/* title, one line across the top of the sheet */}
+        <div className="absolute inset-x-6 top-24 text-center md:top-[104px]">
+          <motion.h1
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.2, 0.7, 0.2, 1] }}
+            className="text-[clamp(30px,4.5vw,72px)] leading-none md:whitespace-nowrap"
           >
-            Night truck ban
-            <span className={cn("relative h-5 w-9 rounded-full transition-colors", policy ? "bg-[var(--accent)]" : "bg-[var(--detail)]")}>
-              <span className={cn("absolute top-0.5 size-4 rounded-full bg-white transition-transform", policy ? "translate-x-[18px]" : "translate-x-0.5")} />
-            </span>
-          </button>
+            Test an air policy <em>before</em> the city pays.
+          </motion.h1>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.3 }} className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <Link to="/app/new" className="btn-accent inline-flex h-10 items-center gap-2 rounded-full px-5 text-[14px] font-medium transition-colors">
+              Pre-check a policy <ArrowRight className="size-4" />
+            </Link>
+            <Link to={LIVE_RUN} className="btn-line inline-flex h-10 items-center rounded-full px-5 text-[14px] transition-shadow">
+              Watch a live run
+            </Link>
+          </motion.div>
+        </div>
+
+        {/* plate caption, bottom-left */}
+        <div className="absolute bottom-5 left-10 hidden font-mono text-[10.5px] leading-relaxed tracking-[0.12em] text-[var(--ink)] md:block">
+          <div className="text-[var(--ink-hi)]">FIG. 01</div>
+          <div>ANAND VIHAR · EAST DELHI</div>
+          <div>23:00 IST · AXONOMETRIC, NTS</div>
+        </div>
+
+        {/* title block, bottom-right */}
+        <div className="relative mx-6 mt-4 w-auto border border-[var(--ink-hi)] bg-[var(--bg)] font-mono text-[11px] md:absolute md:bottom-5 md:right-5 md:mx-0 md:mt-0 md:w-[300px]">
+          <div className="flex items-center justify-between border-b border-[var(--ink-hi)] px-3 py-2">
+            <span className="wordmark font-sans text-[14px] text-[var(--ink-hi)]">gcorp</span>
+            <span className="tracking-[0.12em] text-[var(--ink)]">SHEET 01/04</span>
+          </div>
+          <div className="grid grid-cols-2">
+            <div className="border-r border-[var(--ink-hi)] px-3 py-2">
+              <div className="text-[9.5px] tracking-[0.12em] text-[var(--ink)]">AQI NOW</div>
+              <div className="mt-0.5 text-[15px] text-[var(--ink-hi)] tabular">{fmt(s.zoneBefore)}</div>
+            </div>
+            <div className="px-3 py-2">
+              <div className="text-[9.5px] tracking-[0.12em] text-[var(--ink)]">NIGHT TRUCK BAN</div>
+              <div className={cn("mt-0.5 text-[15px] tabular", policy ? "text-[var(--accent)]" : "text-[var(--ink)]")}>
+                {policy ? `${fmt(s.zoneAfterLo)}–${fmt(s.zoneAfterHi)}` : "—"}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -111,8 +134,8 @@ function Hero() {
 function Problem() {
   return (
     <section className="mx-auto max-w-[1240px] px-6 py-28 md:py-40">
-      <motion.p {...rise} className="max-w-[1000px] font-[family-name:var(--font-display)] text-[clamp(36px,5vw,72px)] leading-[1.02] tracking-[-0.02em] text-[var(--ink-hi)]">
-        Every winter, Delhi argues about air policies <span className="text-[var(--ink)]">nobody has tested.</span>
+      <motion.p {...rise} className="display max-w-[1000px] text-[clamp(34px,4.6vw,68px)] leading-[1.02] text-[var(--ink-hi)]">
+        Every winter, Delhi argues about air policies <em>nobody has tested.</em>
       </motion.p>
     </section>
   );
@@ -332,7 +355,7 @@ function Footer() {
   return (
     <footer className="border-t border-[var(--edge)]">
       <div className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-between gap-4 px-6 py-8 text-[12px] text-[var(--ink)]">
-        <span className="flex items-center gap-2"><LogoMark className="size-4" /> Gcorp · prototype on demo data</span>
+        <span className="flex items-center gap-2"><LogoMark className="size-4" /> <span className="wordmark text-[var(--ink-hi)]">gcorp</span> · prototype on demo data</span>
         <a href="https://iso-glow.vercel.app" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[var(--line)] hover:text-[var(--ink)]">
           Made with ISO-GLOW <ArrowUpRight className="size-3" />
         </a>

@@ -17,7 +17,7 @@ export function kernel(OX: number, OY: number) {
   const TOP = (x: number, y: number, z: number) => plane([x, y, z], [1, 0, 0], [0, 1, 0]);
   const FRONT = (x: number, y: number, z: number) => plane([x, y, z], [1, 0, 0], [0, 0, -1]);
   const SIDE = (x: number, y: number, z: number) => plane([x, y, z], [0, -1, 0], [0, 0, -1]);
-  const rect = (t: string, w: number, h: number, r = 0, cls = "face") => `<g transform="${t}"><rect class="${cls}" width="${w}" height="${h}" rx="${r}"/></g>`;
+  const rect = (t: string, w: number, h: number, r = 0, cls = "face") => `<g transform="${t}"><rect class="${cls}" width="${w}" height="${h}" rx="${r}" pathLength="1000"/></g>`;
   const box = (x: number, y: number, z: number, w: number, d: number, h: number, cls = "") =>
     rect(SIDE(x + w, y + d, z + h), d, h, 0, `face side ${cls}`) + rect(FRONT(x, y + d, z + h), w, h, 0, `face front ${cls}`) + rect(TOP(x, y, z + h), w, d, 0, `face top ${cls}`);
   const path = (pts: V3[]) => "M" + pts.map((p) => P(...p).map((n) => n.toFixed(2)).join(" ")).join("L");
