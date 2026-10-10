@@ -51,15 +51,15 @@ export interface IsoCityProps {
 interface Anim { mix: number }
 
 const PALETTE = {
-  base: new THREE.Color("#12151b"),
-  lot: new THREE.Color("#1a1e26"),
-  road: new THREE.Color("#262b35"),
-  arterial: new THREE.Color("#323846"),
-  river: new THREE.Color("#0f2c45"),
-  park: new THREE.Color("#173527"),
-  open: new THREE.Color("#1d2028"),
-  industrialLot: new THREE.Color("#211f1d"),
-  zone: new THREE.Color("#8fb3ff"),
+  base: new THREE.Color("#121212"),
+  lot: new THREE.Color("#1a1a1a"),
+  road: new THREE.Color("#262626"),
+  arterial: new THREE.Color("#323232"),
+  river: new THREE.Color("#14222e"),
+  park: new THREE.Color("#18241d"),
+  open: new THREE.Color("#1d1d1d"),
+  industrialLot: new THREE.Color("#1f1e1c"),
+  zone: new THREE.Color("#ffffff"),
 };
 
 function cssVarColor(v: string) {
@@ -171,7 +171,7 @@ const Buildings = memo(function Buildings() {
       m.compose(new THREE.Vector3(W(c.x) + ox, 0, W(c.z) + oz), new THREE.Quaternion(), new THREE.Vector3(fw, c.height, fd));
       ref.current.setMatrixAt(i, m);
       if (ind) col.setHSL(0.08, 0.06, 0.34 + rnd() * 0.06);
-      else col.setHSL(0.6, 0.1 + rnd() * 0.05, 0.5 + rnd() * 0.12 + Math.min(0.1, c.height * 0.02));
+      else col.setHSL(0.6, 0.03, 0.52 + rnd() * 0.12 + Math.min(0.1, c.height * 0.02));
       ref.current.setColorAt(i, col);
     });
     ref.current.instanceMatrix.needsUpdate = true;
@@ -246,7 +246,7 @@ const River = memo(function River() {
   return (
     <instancedMesh ref={ref} args={[undefined, undefined, cells.length]}>
       <boxGeometry />
-      <meshStandardMaterial ref={mat} color="#16466b" emissive="#0d3557" roughness={0.18} metalness={0.4} transparent opacity={0.92} />
+      <meshStandardMaterial ref={mat} color="#1c3346" emissive="#0e2233" roughness={0.18} metalness={0.4} transparent opacity={0.92} />
     </instancedMesh>
   );
 });
@@ -362,7 +362,7 @@ function ZoneOutline({ zoneId }: { zoneId: string }) {
   });
   return (
     <lineSegments geometry={geo} renderOrder={20}>
-      <lineBasicMaterial ref={mat} color="#a9c2ff" transparent depthTest={false} />
+      <lineBasicMaterial ref={mat} color="#ffffff" transparent depthTest={false} />
     </lineSegments>
   );
 }
@@ -496,7 +496,7 @@ function Diorama() {
     <group position-y={-0.55}>
       <mesh receiveShadow>
         <boxGeometry args={[N + 0.8, 0.9, N + 0.8]} />
-        <meshStandardMaterial color="#0d1015" roughness={0.95} />
+        <meshStandardMaterial color="#0c0c0c" roughness={0.95} />
       </mesh>
       <lineSegments geometry={edges}>
         <lineBasicMaterial color="#ffffff" transparent opacity={0.08} />
@@ -587,7 +587,7 @@ export function IsoCity(props: IsoCityProps) {
         />
         <Rig mode={mode} focus={focus} follow={follow} anim={anim} showAfter={showAfter} />
 
-        <hemisphereLight args={["#c3cfff", "#0a0c10", 0.75]} />
+        <hemisphereLight args={["#e8ecf2", "#0a0a0a", 0.75]} />
         <ambientLight intensity={0.12} />
         <directionalLight
           position={[-14, 26, 10]}
@@ -602,7 +602,7 @@ export function IsoCity(props: IsoCityProps) {
           shadow-bias={-0.0006}
           shadow-normalBias={0.02}
         />
-        <directionalLight position={[20, 10, -16]} intensity={0.55} color="#7d9bff" />
+        <directionalLight position={[20, 10, -16]} intensity={0.45} color="#c8d0dc" />
 
         <group>
           <Diorama />
@@ -632,7 +632,7 @@ export function IsoCity(props: IsoCityProps) {
                 className={
                   "absolute left-0 top-0 whitespace-nowrap rounded-full border px-2 py-0.5 text-[10.5px] font-medium tracking-tight backdrop-blur-md transition-[background,color,border-color] will-change-transform " +
                   (onZoneClick ? "pointer-events-auto cursor-pointer " : "") +
-                  (active ? "border-brand/60 bg-brand/25 text-white" : "border-white/10 bg-black/50 text-white/70 hover:border-white/25 hover:text-white")
+                  (active ? "border-white/60 bg-white/15 text-white" : "border-white/10 bg-black/50 text-white/70 hover:border-white/25 hover:text-white")
                 }
               >
                 {z.name}

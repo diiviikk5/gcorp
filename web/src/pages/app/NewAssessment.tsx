@@ -199,7 +199,7 @@ export default function NewAssessment() {
 
         {/* Right rail: live preview */}
         <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
-          <div className="overflow-hidden rounded-2xl bg-[radial-gradient(ellipse_at_50%_40%,#151a26_0%,#0a0b0f_75%)] ring-1 ring-inset ring-line">
+          <div className="overflow-hidden rounded-2xl bg-[radial-gradient(ellipse_at_50%_40%,#151515_0%,#000_75%)] ring-1 ring-inset ring-line">
             <IsoCity mode="mini" className="h-[260px]" field={field} showAfter={false} zoneId={zone} showTraffic showLabels onZoneClick={(id) => setZone(id)} />
             <div className="flex items-center justify-between border-t border-line px-4 py-2.5 text-[12px]">
               <span className="text-mute">Selected</span>

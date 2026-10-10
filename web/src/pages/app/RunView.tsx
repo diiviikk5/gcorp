@@ -125,7 +125,7 @@ export default function RunView() {
         </aside>
 
         {/* Center: the city */}
-        <section className="relative min-h-[420px] overflow-hidden bg-[radial-gradient(ellipse_at_50%_40%,#141824_0%,#08090c_70%)]">
+        <section className="relative min-h-[420px] overflow-hidden bg-[radial-gradient(ellipse_at_50%_40%,#141414_0%,#000_70%)]">
           <div className="grid-bg pointer-events-none absolute inset-0 opacity-60" />
           <IsoCity
             mode="app"
