@@ -14,8 +14,8 @@
   --color-line: rgb(18 17 16 / 0.1);
   --color-line-2: rgb(18 17 16 / 0.18);
   --color-fg: #121110;
-  --color-mute: #6d6a64;
-  --color-faint: #9b978f;
+  --color-mute: #45423e;
+  --color-faint: #6e6a64;
 
   --color-brand: #121110;
   --color-brand-2: #2a2826;
@@ -23,7 +23,7 @@
   --color-accent: #ff4a1c;
 
   --color-ok: #121110;
-  --color-warn: #6d6a64;
+  --color-warn: #45423e;
   --color-bad: #e8431b;
 
   --color-a-compiler: #121110;
@@ -168,12 +168,12 @@
   --panel: #ebe8e1;
   --edge: #d8d4cb;
   --line: #1c1b19;
-  --detail: #c9c4ba;
+  --detail: #b9b3a8;
   --top: #fbfaf7;
   --front: #ecebe5;
   --side: #dcd9d1;
   --recess: #e3dfd6;
-  --ink: #6d6a64;
+  --ink: #45423e;
   --ink-hi: #121110;
   --accent: #ff4a1c;
   --accent-dim: rgb(255 74 28 / 0.08);
