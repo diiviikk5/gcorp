@@ -557,7 +557,8 @@ export function IsoCity(props: IsoCityProps) {
   const activeMeta = agents?.find((a) => a.id === activeAgent);
 
   return (
-    <div ref={host} className={"relative " + (className ?? "")}>
+    <div ref={host} className={className}>
+     <div className="relative h-full w-full">
       <Canvas
         shadows
         dpr={[1, 1.75]}
@@ -649,6 +650,7 @@ export function IsoCity(props: IsoCityProps) {
           </div>
         )}
       </div>
+     </div>
     </div>
   );
 }

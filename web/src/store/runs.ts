@@ -38,7 +38,7 @@ export const useRuns = create<RunsState>()(
       },
       removeRun: (id) => set({ runs: get().runs.filter((r) => r.id !== id) }),
     }),
-    { name: "air-council-runs", version: 2 },
+    { name: "air-council-runs", version: 3 },
   ),
 );
 

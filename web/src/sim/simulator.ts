@@ -79,7 +79,7 @@ export function simulate(scenario: Scenario, round = 1): SimResult {
     // Spread: apportionment ± SHARE_SPREAD, compliance ± 15%, sensor gap widens it.
     const dLoPts = b * effect * (1 - SHARE_SPREAD) * 0.85; // conservative reduction
     const dHiPts = b * effect * (1 + SHARE_SPREAD) * 1.15; // optimistic reduction
-    const sensorPad = u * Math.abs(b * effect) * 0.9 + u * 6;
+    const sensorPad = u * Math.abs(b * effect) * 0.35 + u * 1.5;
     const optimistic = b - Math.max(dLoPts, dHiPts) - sensorPad;
     const conservative = b - Math.min(dLoPts, dHiPts) + sensorPad;
     afterLo[i] = clamp(optimistic, 20, 500);

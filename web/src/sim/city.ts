@@ -185,7 +185,7 @@ export function uncertaintyField(city: City): Float32Array {
   for (const c of city.cells) {
     let d = Infinity;
     for (const s of city.stations) d = Math.min(d, Math.hypot(s.x - c.x, s.z - c.z));
-    u[c.z * N + c.x] = clamp((d - 1) / 7, 0, 1);
+    u[c.z * N + c.x] = clamp((d - 1.5) / 8, 0, 1);
   }
   return u;
 }
@@ -210,7 +210,7 @@ export function zoneCoverage(zoneId: string): "good" | "thin" | "none" {
   let s = 0, n = 0;
   for (const c of city.cells) if (c.zone === zoneId) { s += unc[c.z * city.size + c.x]; n++; }
   const m = n ? s / n : 1;
-  return m < 0.22 ? "good" : m < 0.5 ? "thin" : "none";
+  return m < 0.28 ? "good" : m < 0.55 ? "thin" : "none";
 }
 
 export function zoneBaseline(zoneId: string): number {

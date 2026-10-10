@@ -176,7 +176,7 @@ function makeTitle(cls: VehicleClass, fuel: string | null, zone: string, params:
   const what = cls === "construction" ? "Construction dust enforcement" :
     cls === "industry" ? "Industrial curbs" :
     cls === "wasteBurning" ? "Waste-burning crackdown" :
-    `${hours ? "Night-time " : ""}${fuel ? fuel[0].toUpperCase() + fuel.slice(1) + " " : ""}${CLASS_LABEL[cls].split(" (")[0].toLowerCase()} ban`;
+    `${hours ? (hours.startsWith("23") ? "night-time " : "daytime ") : ""}${fuel ? fuel + " " : ""}${CLASS_LABEL[cls].split(" (")[0].toLowerCase()} ban`;
   const cap = what.charAt(0).toUpperCase() + what.slice(1);
   return `${cap} · ${where} · ${span}`;
 }
