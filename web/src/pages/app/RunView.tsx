@@ -117,7 +117,7 @@ export default function RunView() {
         <motion.div className="h-px bg-brand" animate={{ width: `${pctDone * 100}%` }} transition={{ duration: 0.2 }} />
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[300px_1fr_380px] xl:grid-cols-[320px_1fr_420px]">
+      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[280px_1fr_360px] 2xl:grid-cols-[320px_1fr_420px]">
         {/* Left */}
         <aside className="hidden min-h-0 space-y-6 overflow-y-auto border-r border-line p-4 lg:block">
           <ScenarioCard scenario={scenario} overrides={d.params} runId={rec.id} />
@@ -142,7 +142,7 @@ export default function RunView() {
           />
 
           {/* Result card */}
-          <div className="pointer-events-none absolute left-4 top-4 w-[300px]">
+          <div className="pointer-events-none absolute left-4 top-4 w-[280px]">
             <div className="glass pointer-events-auto rounded-xl p-3.5">
               <div className="flex items-center justify-between">
                 <span className="eyebrow">{scenario.zoneId === "all" ? "City mean" : `${scenario.params.zone.value} · zone mean`}</span>
@@ -184,43 +184,44 @@ export default function RunView() {
             <Segmented value={view} onChange={setView} className="glass" options={[{ value: "auto", label: "Live" }, { value: "before", label: "Before" }, { value: "after", label: "After" }]} />
           </div>
 
-          {/* Legend */}
-          <div className="glass absolute bottom-4 left-4 flex items-center gap-4 rounded-xl px-3.5 py-2.5 text-[11px] text-mute">
-            {layer === "delta" ? (
-              <div className="flex items-center gap-3">
-                <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-[#4fe3c1]" /> Cleaner</span>
-                <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-[#ff7a59]" /> Displaced load</span>
-              </div>
-            ) : (
-              <AqiScale />
-            )}
-            <span className="h-6 w-px bg-line-2" />
-            <span className="flex items-center gap-1.5"><span className="hatch size-3 rounded-sm ring-1 ring-white/20" /> Thin data</span>
-            <span className="flex items-center gap-1.5"><span className="size-2 rotate-45 bg-aqi-poor" /> Station</span>
-          </div>
-
-          {/* Timeline */}
-          <div className="glass absolute bottom-4 right-4 hidden w-[min(420px,40%)] rounded-xl px-3 py-2.5 xl:block">
-            <div className="relative h-5 cursor-pointer" onClick={(e) => {
-              const r = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-              seek(((e.clientX - r.left) / r.width) * duration);
-            }}>
-              <div className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 rounded bg-white/10" />
-              <div className="absolute left-0 top-1/2 h-0.5 -translate-y-1/2 rounded bg-brand" style={{ width: `${pctDone * 100}%` }} />
-              {bundle.script.events.map((e, i) => {
-                if (e.type !== "verdict" && e.type !== "sim") return null;
-                const c = e.type === "sim" ? "bg-a-simulator" : e.status === "accepted" ? "bg-ok" : e.status === "rejected" ? "bg-bad" : "bg-warn";
-                return <span key={i} className={cn("absolute top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full", c, e.t > elapsed && runId === rec.id && "opacity-30")} style={{ left: `${(e.t / duration) * 100}%` }} />;
-              })}
+          {/* Bottom bar: legend + timeline */}
+          <div className="pointer-events-none absolute inset-x-4 bottom-4 flex flex-wrap items-end justify-between gap-3">
+            <div className="glass pointer-events-auto flex items-center gap-4 rounded-xl px-3.5 py-2.5 text-[11px] text-mute">
+              {layer === "delta" ? (
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-[#4fe3c1]" /> Cleaner</span>
+                  <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-[#ff7a59]" /> Displaced load</span>
+                </div>
+              ) : (
+                <AqiScale />
+              )}
+              <span className="h-6 w-px bg-line-2" />
+              <span className="flex items-center gap-1.5 whitespace-nowrap"><span className="hatch size-3 rounded-sm ring-1 ring-white/20" /> Thin data</span>
+              <span className="flex items-center gap-1.5"><span className="size-2 rotate-45 bg-aqi-poor" /> Station</span>
             </div>
-            <div className="mt-1 flex justify-between font-mono text-[10px] text-faint">
-              <span>{STAGES.map((s) => s.label).join(" · ")}</span>
+
+            <div className="glass pointer-events-auto hidden min-w-[260px] flex-1 basis-[260px] rounded-xl px-3 py-2.5 lg:block" style={{ maxWidth: 440 }}>
+              <div className="relative h-5 cursor-pointer" onClick={(e) => {
+                const r = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+                seek(((e.clientX - r.left) / r.width) * duration);
+              }}>
+                <div className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 rounded bg-white/10" />
+                <div className="absolute left-0 top-1/2 h-0.5 -translate-y-1/2 rounded bg-brand" style={{ width: `${pctDone * 100}%` }} />
+                {bundle.script.events.map((e, i) => {
+                  if (e.type !== "verdict" && e.type !== "sim") return null;
+                  const c = e.type === "sim" ? "bg-a-simulator" : e.status === "accepted" ? "bg-ok" : e.status === "rejected" ? "bg-bad" : "bg-warn";
+                  return <span key={i} className={cn("absolute top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full", c, e.t > elapsed && runId === rec.id && "opacity-30")} style={{ left: `${(e.t / duration) * 100}%` }} />;
+                })}
+              </div>
+              <div className="mt-1 flex justify-between font-mono text-[10px] text-faint">
+                {STAGES.map((s) => <span key={s.id} className={d.stages[s.id] === "idle" ? "" : d.stages[s.id] === "running" ? "text-brand" : "text-mute"}>{s.label}</span>)}
+              </div>
             </div>
           </div>
 
           <AnimatePresence>
             {d.complete && pctDone >= 1 && !blocked && (
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute bottom-[72px] left-1/2 -translate-x-1/2">
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute bottom-[84px] left-1/2 -translate-x-1/2">
                 <Link to={`/app/runs/${rec.id}/brief`} className="glass flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[12px] font-medium text-fg hover:bg-white/10">
                   <span className="size-1.5 rounded-full bg-ok" /> Brief ready: {fmt(sim.summary.deltaLo)}–{fmt(sim.summary.deltaHi)} AQI points <ChevronRight className="size-3.5" />
                 </Link>

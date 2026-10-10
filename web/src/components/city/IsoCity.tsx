@@ -509,7 +509,7 @@ function Rig({ mode, focus, follow, anim, showAfter }: { mode: IsoCityProps["mod
   const { size, camera, controls } = useThree() as unknown as { size: { width: number; height: number }; camera: THREE.OrthographicCamera; controls: { target: THREE.Vector3; update: () => void } | null };
   const fit = useMemo(() => {
     const k = mode === "hero" ? 1.0 : mode === "mini" ? 1.12 : 1.0;
-    return Math.min(size.width / (N * 1.5), size.height / (N * 0.98)) * k;
+    return Math.min(size.width / (N * 1.42), size.height / (N * 0.95)) * k;
   }, [size, mode]);
   useEffect(() => {
     camera.zoom = fit;

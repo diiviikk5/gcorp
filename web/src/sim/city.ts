@@ -25,6 +25,7 @@ export const ZONES: Zone[] = [
 
 const STATION_DEFS: { id: string; name: string; zone: string; dx: number; dz: number }[] = [
   { id: "S-AV", name: "Anand Vihar", zone: "anandvihar", dx: 0, dz: 0 },
+  { id: "S-PP", name: "Patparganj", zone: "anandvihar", dx: -2, dz: -3 },
   { id: "S-VV", name: "Vivek Vihar", zone: "shahdara", dx: 0, dz: 2 },
   { id: "S-ITO", name: "ITO", zone: "ito", dx: 0, dz: 0 },
   { id: "S-PB", name: "Punjabi Bagh", zone: "punjabibagh", dx: 1, dz: -1 },
