@@ -186,3 +186,13 @@ def reload_data() -> dict:
     """Pick up rows from `gcorp data pull` without restarting."""
     ledger.reload()
     return {"ledgerRows": len(ledger.all_rows())}
+
+
+@app.get("/api/breathe")
+def breathe(zone: str = "anandvihar", run: str | None = None) -> dict:
+    from .planning import breathe as _breathe
+    hourly = None
+    if run and run in RUNS:
+        sims = RUNS[run].sims
+        hourly = sims[max(sims)]["summary"].get("hourly")
+    return _breathe(zone, hourly)

@@ -129,3 +129,29 @@ def sensor_advice(run_text: str, zone: str, top: int = 5) -> dict:
     results.sort(key=lambda r: -r["reduction"])
     cost = ledger.get("L-027")
     return {"zone": zone, "bandWidth": base, "candidates": results[:top], "unitCost": cost["value"] if cost else None, "unitCostRef": "L-027"}
+
+
+def breathe(zone: str, run_hourly: list[float] | None = None) -> dict:
+    """Citizen view: hourly AQI estimate (as a band) and the cleanest school-hours window.
+
+    Shape comes from the diurnal traffic profile over the mixing height (L-023, L-024);
+    level from the zone baseline. With a policy, subtract its hourly reduction.
+    """
+    from .city import zone_baseline
+    from .simulator import DIURNAL_TRAFFIC, MIXING
+
+    mean = zone_baseline(zone)
+    raw = [DIURNAL_TRAFFIC[h] / MIXING[h] for h in range(24)]
+    avg = sum(raw) / 24
+    hours = []
+    for h in range(24):
+        level = mean * (0.72 + 0.28 * raw[h] / avg)
+        cut = run_hourly[h] if run_hourly else 0.0
+        mid = level - cut
+        spread = 0.08 * level
+        hours.append({"hour": h, "lo": round(mid - spread, 1), "hi": round(mid + spread, 1), "mid": round(mid, 1), "cut": round(cut, 1)})
+    school = [x for x in hours if 7 <= x["hour"] <= 16]
+    best = min(range(len(school) - 1), key=lambda i: school[i]["mid"] + school[i + 1]["mid"])
+    window = (school[best]["hour"], school[best + 1]["hour"] + 1)
+    worst = max(hours, key=lambda x: x["mid"])
+    return {"zone": zone, "hours": hours, "bestWindow": window, "worstHour": worst["hour"], "refs": ["L-023", "L-024"]}
