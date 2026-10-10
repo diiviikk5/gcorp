@@ -9,7 +9,7 @@ from .rng import fnv1a
 
 PARAM_ORDER = [
     "vehicleClass", "fuelFilter", "zone", "reductionPct", "targetedShare", "compliancePct",
-    "leakagePct", "durationDays", "startDate", "hours", "weather",
+    "leakagePct", "durationDays", "startDate", "hours", "weather", "regionalPct",
 ]
 
 

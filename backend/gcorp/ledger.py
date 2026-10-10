@@ -26,6 +26,8 @@ EXTRA_ROWS = [
     {"id": "L-028", "label": "Observed PM2.5 change, odd-even Nov 4–15, 2019", "value": "−1% to −4%", "source": "Independent evaluations of odd-even, 2019", "url": "https://transport.delhi.gov.in", "scope": "City-wide", "status": "demo"},
     {"id": "L-029", "label": "Observed change during construction ban (GRAP III, Nov 2021)", "value": "−2% to −6%", "source": "CAQM / CPCB bulletins", "url": "https://caqm.nic.in", "scope": "City-wide", "status": "demo"},
     {"id": "L-030", "label": "Observed change, heavy-vehicle entry curbs (Nov 2023)", "value": "−3% to −9% (east Delhi)", "source": "CPCB station data, Anand Vihar / Patparganj", "url": "https://cpcb.nic.in", "scope": "East Delhi", "status": "demo"},
+    {"id": "L-032", "label": "Regional / transboundary share of Delhi PM2.5 by month", "value": "Nov ~32% · Jan ~26% · Jul ~6% (monthly mean)", "source": "SAFAR / IITM stubble-share bulletins; CAMS regional runs", "url": "https://safar.tropmet.res.in", "scope": "Delhi NCR, monthly", "status": "demo"},
+    {"id": "L-033", "label": "Local source shares by zone type (receptor studies)", "value": "transit zones: vehicles ~1.4× city mean", "source": "Receptor modelling, Delhi CAAQMS sites", "url": "https://cpcb.nic.in", "scope": "Zone type", "status": "demo"},
     {"id": "L-031", "label": "Cost of private-car rationing (enforcement + transit top-up)", "value": "₹4 crore / fortnight", "source": "Transport Department, odd-even 2016 accounts", "url": "https://transport.delhi.gov.in", "scope": "City-wide", "status": "demo"},
 ]
 
@@ -35,7 +37,7 @@ SCOPE_LEVEL = {
     "L-007": "city", "L-008": "city", "L-009": "point", "L-010": "city", "L-011": "district", "L-012": "zone",
     "L-013": "zone", "L-014": "city", "L-015": "city", "L-016": "city", "L-017": "city", "L-018": "city",
     "L-019": "city", "L-020": "zone", "L-021": "zone", "L-022": "none", "L-023": "city", "L-024": "city",
-    "L-025": "point", "L-026": "zone", "L-027": "point", "L-028": "city", "L-029": "city", "L-030": "district", "L-031": "city",
+    "L-025": "point", "L-026": "zone", "L-027": "point", "L-028": "city", "L-029": "city", "L-030": "district", "L-031": "city", "L-032": "city", "L-033": "zone",
 }
 
 

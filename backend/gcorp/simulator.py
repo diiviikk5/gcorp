@@ -27,6 +27,20 @@ SECTOR_SHARE: dict[str, tuple[float, list[str]]] = {
 }
 SHARE_SPREAD = 0.3
 
+# Regional / transboundary share of PM2.5 by month (L-032). The apportionment
+# shares above were measured in a winter averaging ~25% regional; local levers
+# scale with the local remainder.
+REGIONAL_BY_MONTH = {1: 26, 2: 20, 3: 14, 4: 10, 5: 10, 6: 8, 7: 6, 8: 6, 9: 10, 10: 25, 11: 32, 12: 28}
+REGIONAL_REFERENCE = 25.0
+
+
+def regional_default(start: str | None) -> float:
+    try:
+        return float(REGIONAL_BY_MONTH[int(str(start)[5:7])])
+    except (ValueError, KeyError, TypeError):
+        return REGIONAL_REFERENCE
+
+
 # Share of each source's daily activity inside a time window (L-015, L-023).
 NIGHT_SHARE = {"trucks": 0.78, "cars": 0.12, "twoWheelers": 0.08, "buses": 0.15, "autos": 0.1}
 
@@ -63,6 +77,8 @@ class SimSummary:
     child_hours_lo: float
     child_hours_hi: float
     hourly: list[float] = field(default_factory=list)  # mid AQI reduction by hour, zone mean
+    ceiling_pct: float = 0.0  # max achievable % at full compliance, no leakage
+    regional_pct: float = 0.0
 
 
 @dataclass
@@ -88,6 +104,7 @@ class SimResult:
                 "exposureLo": s.exposure_lo, "exposureHi": s.exposure_hi, "spillover": s.spillover,
                 "coverage": s.coverage, "bandWidth": s.band_width, "schoolCells": s.school_cells,
                 "childHoursLo": s.child_hours_lo, "childHoursHi": s.child_hours_hi, "hourly": s.hourly,
+                "ceilingPct": s.ceiling_pct, "regionalPct": s.regional_pct,
             },
         }
         if with_grids:
@@ -151,7 +168,11 @@ def simulate(sc: Scenario, round_: int = 1, extra_sensors: list[tuple[int, int]]
                 continue
             dist[i] = min(abs(zc.x - c.x) + abs(zc.z - c.z) for zc in zone_list)
 
-    core = share * targeted * reduction * compliance * window * weather["local"]
+    regional = sc.num("regionalPct", regional_default(sc.value("startDate"))) / 100
+    local_scale = (1 - regional) / (1 - REGIONAL_REFERENCE / 100)
+    core = share * targeted * reduction * compliance * window * weather["local"] * local_scale
+    # Ceiling: the most this lever could remove even at full compliance and no displacement.
+    ceiling_pct = share * targeted * window * weather["local"] * local_scale * 100
     after_lo = [0.0] * (n * n)
     after_hi = [0.0] * (n * n)
     zb = zlo = zhi = zn = exp_lo = exp_hi = spill = band = 0.0
@@ -214,7 +235,7 @@ def simulate(sc: Scenario, round_: int = 1, extra_sensors: list[tuple[int, int]]
     inputs = {
         "class": cls, "zone": sc.zone_id, "targetedShare": targeted, "reductionPct": reduction,
         "compliancePct": compliance, "leakagePct": leakage, "durationDays": days,
-        "window": round(window, 3), "weather": weather["label"], "sectorShare": share,
+        "window": round(window, 3), "weather": weather["label"], "sectorShare": share, "regionalPct": regional * 100,
     }
     return SimResult(
         round=round_,
@@ -233,5 +254,6 @@ def simulate(sc: Scenario, round_: int = 1, extra_sensors: list[tuple[int, int]]
             coverage="good" if all_city else zone_coverage(sc.zone_id, unc),
             band_width=band / zn, school_cells=n_school,
             child_hours_lo=ch_lo / 1e6, child_hours_hi=ch_hi / 1e6, hourly=hourly,
+            ceiling_pct=ceiling_pct, regional_pct=regional * 100,
         ),
     )

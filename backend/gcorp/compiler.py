@@ -11,6 +11,7 @@ import re
 
 from .city import ZONE_BY_ID, ZONES, zone_coverage
 from .scenario import Param, Scenario, Warning
+from .simulator import regional_default
 
 CLASS_LABEL = {
     "trucks": "Goods vehicles (trucks)",
@@ -150,6 +151,8 @@ def compile_policy(text: str, zone_id: str | None = None, overrides: dict | None
         "startDate": Param("startDate", "Start", start, start_origin),
         "hours": Param("hours", "Hours", hours, hours_origin, ledgerRef="L-015" if hours_origin == "stated" and hours.startswith("23") else None),
         "weather": Param("weather", "Weather", weather, weather_origin, ledgerRef="L-024", note="Mixing regime used by the simulator."),
+        "regionalPct": Param("regionalPct", "Regional smoke share", regional_default(start), "assumed", unit="%", ledgerRef="L-032",
+                             note="Transboundary share for the start month; caps what local levers can do."),
     }
     for k, v in (overrides or {}).items():
         if k in params:
