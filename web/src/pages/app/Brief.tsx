@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/app/AppLayout";
 import { Button } from "@/components/ui/Button";
 import { RefChip, RichText } from "@/components/ui/RichText";
 import { RangeBar } from "@/components/ui/Aqi";
-import { useRun } from "@/store/runs";
+import { finalSim, useRun } from "@/store/runs";
 import { recommend } from "@/lib/recommend";
 import { AGENTS } from "@/sim/council";
 import { paramDisplay } from "@/lib/refs";
@@ -30,7 +30,7 @@ export default function Brief() {
 
   const rec = b.record;
   const sc = rec.scenario;
-  const sim = b.sims[2];
+  const sim = finalSim(b);
   const s = sim.summary;
   const ctx = { scenario: sc, sim, overrides: b.script.finalOverrides };
   const r = recommend(b);

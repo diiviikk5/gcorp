@@ -14,7 +14,8 @@ export const AGENTS: Record<AgentId, { name: string; role: string; model: string
   economist: { name: "Economist", role: "Who bears the cost?", model: "Claude Sonnet", color: "var(--color-a-econ)", short: "EC" },
   skeptic: { name: "Skeptic", role: "Argues against. Names the weakest assumption.", model: "Different model family", color: "var(--color-a-skeptic)", short: "SK" },
   verifier: { name: "Verifier", role: "Checks sourcing only, never argument quality", model: "Claude Haiku + ledger lookup", color: "var(--color-a-verifier)", short: "VF" },
-  writer: { name: "Brief writer", role: "Writes only from accepted claims", model: "Claude Sonnet", color: "var(--color-a-writer)", short: "BW" },
+  writer: { name: "Brief writer", role: "Writes only from accepted claims", model: "Template", color: "var(--color-a-writer)", short: "BW" },
+  planner: { name: "Planner", role: "You", model: "Human", color: "var(--color-accent)", short: "YOU" },
 };
 
 export const STAGES: { id: StageId; label: string; agent: AgentId; artifact: string; blurb: string }[] = [

@@ -2,7 +2,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { BookOpenCheck, Columns3, LayoutGrid, ListChecks, Plus, Search } from "lucide-react";
 import { useEffect } from "react";
 import { cn } from "@/lib/cn";
-import { useRuns } from "@/store/runs";
+import { useRunList, useRuns } from "@/store/runs";
 import { useUi } from "@/store/ui";
 import { Logo } from "../ui/Logo";
 import { Kbd } from "../ui/Badge";
@@ -17,7 +17,10 @@ const NAV = [
 ];
 
 export function AppLayout() {
-  const runs = useRuns((s) => s.runs);
+  const runs = useRunList();
+  const engine = useRuns((s) => s.engine);
+  const connect = useRuns((s) => s.connect);
+  useEffect(() => { if (engine === "unknown") connect(); }, [engine, connect]);
   const setPalette = useUi((s) => s.setPalette);
   const navigate = useNavigate();
   const { pathname } = useLocation();

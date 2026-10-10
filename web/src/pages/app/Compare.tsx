@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router";
 import { PageHeader } from "@/components/app/AppLayout";
-import { getBundle, useRuns } from "@/store/runs";
+import { bundleFor, finalSim, useRunList } from "@/store/runs";
 import { recommend } from "@/lib/recommend";
 import { fmt } from "@/lib/aqi";
 import { cn } from "@/lib/cn";
@@ -9,15 +9,15 @@ import { cn } from "@/lib/cn";
 // Planners choose between options. Rank by exposure averted (population-weighted),
 // shown as ranges on one shared scale.
 export default function Compare() {
-  const runs = useRuns((s) => s.runs);
+  const runs = useRunList();
   const [picked, setPicked] = useState<string[]>(() => runs.filter((r) => r.kind === "assessment").slice(0, 3).map((r) => r.id));
   const rows = useMemo(
     () =>
       runs
         .filter((r) => picked.includes(r.id))
         .map((r) => {
-          const b = getBundle(r);
-          return { r, b, s: b.sims[2].summary, rec: recommend(b) };
+          const b = bundleFor(r);
+          return { r, b, s: finalSim(b).summary, rec: recommend(b) };
         })
         .sort((a, b) => b.s.exposureLo + b.s.exposureHi - (a.s.exposureLo + a.s.exposureHi)),
     [runs, picked],

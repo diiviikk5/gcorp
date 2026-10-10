@@ -10,7 +10,7 @@ import { RefChip } from "../../ui/RichText";
 
 const ORDER: ParamKey[] = ["vehicleClass", "fuelFilter", "zone", "reductionPct", "targetedShare", "compliancePct", "leakagePct", "durationDays", "startDate", "hours"];
 
-export function ScenarioCard({ scenario, overrides, runId }: { scenario: Scenario; overrides: Partial<Record<ParamKey, number>>; runId: string }) {
+export function ScenarioCard({ scenario, overrides, runId }: { scenario: Scenario; overrides: Partial<Record<ParamKey, number | string>>; runId: string }) {
   return (
     <div>
       <div className="flex items-center justify-between">

@@ -42,6 +42,9 @@ function Stepper({ step }: { step: number }) {
 export default function NewAssessment() {
   const navigate = useNavigate();
   const createRun = useRuns((s) => s.createRun);
+  const createRemote = useRuns((s) => s.createRemote);
+  const engine = useRuns((s) => s.engine);
+  const [launching, setLaunching] = useState(false);
   const [step, setStep] = useState(0);
   const [params] = useSearchParams();
   const [zone, setZone] = useState<string>(params.get("zone") ?? "anandvihar");
@@ -63,6 +66,13 @@ export default function NewAssessment() {
 
   const launch = () => {
     if (!scenario) return;
+    if (engine === "online") {
+      setLaunching(true);
+      createRemote(text, zone === "all" ? undefined : zone, overrides)
+        .then((id) => navigate(`/app/runs/${id}?live=1`))
+        .finally(() => setLaunching(false));
+      return;
+    }
     const id = createRun(scenario);
     navigate(`/app/runs/${id}?live=1`);
   };
@@ -190,8 +200,8 @@ export default function NewAssessment() {
                 Continue <ArrowRight className="size-4" />
               </Button>
             ) : (
-              <Button variant="primary" size="lg" disabled={!ack} onClick={launch}>
-                <Sparkles className="size-4" /> Convene the council
+              <Button variant="primary" size="lg" disabled={!ack || launching} onClick={launch}>
+                <Sparkles className="size-4" /> {launching ? "Convening…" : "Convene the council"}
               </Button>
             )}
           </div>

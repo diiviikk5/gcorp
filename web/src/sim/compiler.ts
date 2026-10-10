@@ -147,6 +147,7 @@ export function compile({ text, zoneId, overrides = {} }: CompileInput): Scenari
     durationDays: p("durationDays", "Duration", duration, durationOrigin, { unit: "days" }),
     startDate: p("startDate", "Start", start, startOrigin),
     hours: p("hours", "Hours", hours, hoursOrigin, { ledgerRef: hoursOrigin === "stated" && hours.startsWith("23") ? "L-015" : undefined }),
+    weather: p("weather", "Weather", /calm|inversion/.test(t) ? "calm" : /windy/.test(t) ? "windy" : "average", /calm|inversion|windy/.test(t) ? "stated" : "assumed", { ledgerRef: "L-024", note: "Mixing regime used by the simulator." }),
   };
 
   for (const [k, v] of Object.entries(overrides) as [ParamKey, number | string][]) {

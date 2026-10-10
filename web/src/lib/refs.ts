@@ -5,7 +5,7 @@ import { fmt } from "./aqi";
 export interface RefContext {
   scenario: Scenario;
   sim?: SimResult;
-  overrides?: Partial<Record<ParamKey, number>>;
+  overrides?: Partial<Record<ParamKey, number | string>>;
 }
 
 export interface Resolved {
@@ -13,7 +13,7 @@ export interface Resolved {
   display: string;
 }
 
-export function paramDisplay(scenario: Scenario, key: ParamKey, overrides?: Partial<Record<ParamKey, number>>) {
+export function paramDisplay(scenario: Scenario, key: ParamKey, overrides?: Partial<Record<ParamKey, number | string>>) {
   const p = scenario.params[key];
   if (!p) return "?";
   const v = overrides?.[key] ?? p.value;

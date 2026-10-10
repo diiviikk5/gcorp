@@ -4,13 +4,13 @@ import { PageHeader } from "@/components/app/AppLayout";
 import { Button } from "@/components/ui/Button";
 import { AqiPill } from "@/components/ui/Aqi";
 import { ZONES, getCity, zoneBaseline, zoneCoverage } from "@/sim/city";
-import { getBundle, useRuns } from "@/store/runs";
+import { bundleFor, finalSim, useRunList } from "@/store/runs";
 import { recommend } from "@/lib/recommend";
 import { aqiBand, fmt, relTime } from "@/lib/aqi";
 import { cn } from "@/lib/cn";
 
 export default function Overview() {
-  const runs = useRuns((s) => s.runs);
+  const runs = useRunList();
   const city = getCity().city;
   const mean = zoneBaseline("all");
   const zones = ZONES.map((z) => ({ ...z, aqi: zoneBaseline(z.id), cov: zoneCoverage(z.id) })).sort((a, b) => b.aqi - a.aqi);
@@ -41,8 +41,8 @@ export default function Overview() {
           </div>
           <div className="mt-3 divide-y divide-line border-y border-line">
             {runs.slice(0, 5).map((r) => {
-              const b = getBundle(r);
-              const s = b.sims[2].summary;
+              const b = bundleFor(r);
+              const s = finalSim(b).summary;
               const rec = recommend(b);
               return (
                 <Link key={r.id} to={`/app/runs/${r.id}`} className="group flex items-center gap-4 py-3.5 text-[13px] transition-colors hover:bg-black/[0.02]">

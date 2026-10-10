@@ -39,7 +39,7 @@ export interface DerivedRun {
   stages: Record<StageId, StageStatus>;
   messages: Extract<RunEvent, { type: "message" }>[];
   claims: Record<string, Claim>;
-  params: Partial<Record<ParamKey, number>>;
+  params: Partial<Record<ParamKey, number | string>>;
   simRound: number;
   activeAgent: AgentId | null;
   focus: [number, number] | null;

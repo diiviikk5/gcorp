@@ -1,4 +1,4 @@
-import type { RunBundle } from "@/store/runs";
+import { finalSim, type RunBundle } from "@/store/runs";
 
 export interface Recommendation {
   verdict: "proceed" | "pilot" | "weak" | "reject";
@@ -8,7 +8,7 @@ export interface Recommendation {
 
 // Deterministic rule over simulator output, not an agent opinion.
 export function recommend(b: RunBundle): Recommendation {
-  const s = b.sims[2].summary;
+  const s = finalSim(b).summary;
   const blocked = b.record.scenario.warnings.some((w) => w.level === "block");
   if (blocked || s.pctHi < 0.5) return { verdict: "reject", label: "Not recommended", line: "The policy targets almost none of the emissions it is meant to cut." };
   if (s.pctHi < 3) return { verdict: "weak", label: "Low impact", line: "A small, uncertain gain. Compare alternatives before committing." };

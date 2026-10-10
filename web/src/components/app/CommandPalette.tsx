@@ -3,7 +3,7 @@ import { ArrowRight, BookOpenCheck, Columns3, FileText, Home, LayoutGrid, Plus, 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useUi } from "@/store/ui";
-import { useRuns } from "@/store/runs";
+import { useRunList } from "@/store/runs";
 import { cn } from "@/lib/cn";
 import { Kbd } from "../ui/Badge";
 
@@ -12,7 +12,7 @@ interface Item { id: string; label: string; hint?: string; icon: React.Component
 export function CommandPalette() {
   const open = useUi((s) => s.palette);
   const setOpen = useUi((s) => s.setPalette);
-  const runs = useRuns((s) => s.runs);
+  const runs = useRunList();
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [sel, setSel] = useState(0);

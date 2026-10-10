@@ -4,13 +4,13 @@ import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/app/AppLayout";
 import { Button } from "@/components/ui/Button";
 import { Segmented } from "@/components/ui/Segmented";
-import { getBundle, useRuns } from "@/store/runs";
+import { bundleFor, finalSim, useRunList } from "@/store/runs";
 import { recommend } from "@/lib/recommend";
 import { fmt, relTime } from "@/lib/aqi";
 import { cn } from "@/lib/cn";
 
 export default function Assessments() {
-  const runs = useRuns((s) => s.runs);
+  const runs = useRunList();
   const [filter, setFilter] = useState<"all" | "assessment" | "replay">("all");
   const list = runs.filter((r) => filter === "all" || r.kind === filter);
 
@@ -38,8 +38,8 @@ export default function Assessments() {
           </thead>
           <tbody className="divide-y divide-line">
             {list.map((r) => {
-              const b = getBundle(r);
-              const s = b.sims[2].summary;
+              const b = bundleFor(r);
+              const s = finalSim(b).summary;
               const rec = recommend(b);
               const claims = Object.values(b.script.claims);
               const rej = claims.filter((c) => c.status === "rejected").length;
@@ -54,7 +54,7 @@ export default function Assessments() {
                   <td className="hidden py-3.5 text-right text-mute tabular sm:table-cell">
                     {claims.length}{rej > 0 && <span className="text-bad"> · {rej} rejected</span>}
                   </td>
-                  <td className="hidden py-3.5 text-right font-mono text-[11.5px] text-faint lg:table-cell">{b.sims[2].fingerprint}</td>
+                  <td className="hidden py-3.5 text-right font-mono text-[11.5px] text-faint lg:table-cell">{finalSim(b).fingerprint}</td>
                 </tr>
               );
             })}

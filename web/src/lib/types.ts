@@ -73,7 +73,8 @@ export type ParamKey =
   | "leakagePct"
   | "durationDays"
   | "startDate"
-  | "hours";
+  | "hours"
+  | "weather";
 
 export interface CompilerWarning {
   level: "info" | "warn" | "block";
@@ -105,6 +106,10 @@ export interface SimSummary {
   spillover: number; // AQI change in neighbouring zones (negative = worse)
   coverage: "good" | "thin" | "none";
   bandWidth: number; // mean uncertainty, AQI points
+  schoolCells?: number;
+  childHoursLo?: number;
+  childHoursHi?: number;
+  hourly?: number[];
 }
 
 export interface SimResult {
@@ -125,7 +130,8 @@ export type AgentId =
   | "economist"
   | "skeptic"
   | "verifier"
-  | "writer";
+  | "writer"
+  | "planner";
 
 export type StageId = "scope" | "simulate" | "challenge" | "verify" | "decide";
 
@@ -138,14 +144,17 @@ export interface Claim {
   status: ClaimStatus;
   ledgerRef?: string;
   reason?: string;
-  changes?: { key: ParamKey; from: number; to: number };
+  rule?: string;
+  scope?: string;
+  changes?: { key: ParamKey; from: number | string; to: number | string };
 }
 
 export type RunEvent =
   | { t: number; type: "stage"; stage: StageId; status: "start" | "done" }
   | { t: number; type: "message"; id: string; agent: AgentId; text: string; claimId?: string; focus?: [number, number]; model?: string }
-  | { t: number; type: "verdict"; claimId: string; status: ClaimStatus; ledgerRef?: string; reason: string; focus?: [number, number] }
-  | { t: number; type: "param"; key: ParamKey; from: number; to: number; claimId: string }
+  | { t: number; type: "verdict"; claimId: string; status: ClaimStatus; ledgerRef?: string; reason: string; rule?: string; focus?: [number, number] }
+  | { t: number; type: "param"; key: ParamKey; from: number | string; to: number | string; claimId: string }
+  | { t: number; type: "action"; agent: AgentId; tool: "ledger.lookup" | "sim.run" | "claim.submit" | "verify" | "param.propose"; target: string; detail?: string }
   | { t: number; type: "sim"; round: number }
   | { t: number; type: "complete" };
 

@@ -49,10 +49,16 @@ export function stationRows(): LedgerRow[] {
 }
 let stationRows_: LedgerRow[] | null = null;
 
+// Rows served by the engine replace the bundled copy when it is online.
+let remoteRows: Map<string, LedgerRow> | null = null;
+export function registerRemoteRows(rows: LedgerRow[]) {
+  remoteRows = new Map(rows.map((r) => [r.id, r]));
+}
+
 export function allLedger(): LedgerRow[] {
-  return [...LEDGER, ...stationRows()];
+  return remoteRows ? Array.from(remoteRows.values()) : [...LEDGER, ...stationRows()];
 }
 
 export function ledgerById(id: string): LedgerRow | undefined {
-  return LEDGER.find((r) => r.id === id) ?? stationRows().find((r) => r.id === id);
+  return remoteRows?.get(id) ?? LEDGER.find((r) => r.id === id) ?? stationRows().find((r) => r.id === id);
 }
