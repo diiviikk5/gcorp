@@ -48,7 +48,7 @@ export function PipelineFigure({ active, onPick }: { active: number; onPick?: (i
     const svg = ref.current;
     if (!svg) return;
     svg.querySelectorAll("[data-st]").forEach((e) => e.classList.toggle("lit", Number(e.getAttribute("data-st")) <= active));
-    svg.querySelectorAll("[data-st]").forEach((e) => e.classList.toggle("dim", Number(e.getAttribute("data-st")) < active));
+    svg.querySelectorAll("[data-st]").forEach((e) => e.classList.toggle("cur", Number(e.getAttribute("data-st")) === active));
     svg.querySelectorAll("[data-sl]").forEach((e) => e.classList.toggle("hi", Number(e.getAttribute("data-sl")) === active));
     svg.querySelectorAll("[data-pw]").forEach((e) => e.classList.toggle("hot", Number(e.getAttribute("data-pw")) < active));
     const p = svg.querySelector(`[data-pp="${active - 1}"]`);

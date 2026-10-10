@@ -192,6 +192,7 @@
 .landing .win { fill: var(--top); stroke: var(--detail); stroke-width: 0.6; vector-effect: non-scaling-stroke; transition: fill 0.6s; }
 .landing .win.lit { fill: var(--line); stroke: var(--line); }
 .landing .win.lit.dim { fill: #8d8a83; stroke: #8d8a83; }
+.landing .win.cur { fill: var(--accent); stroke: var(--accent); }
 .landing .led { fill: var(--top); stroke: var(--line); stroke-width: 0.9; vector-effect: non-scaling-stroke; transition: fill 0.25s; }
 .landing .led.hot { fill: var(--accent); stroke: var(--accent); }
 .landing .halo { display: none; }

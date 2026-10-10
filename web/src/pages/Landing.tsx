@@ -86,14 +86,14 @@ function Hero() {
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.6, delay: 0.3, ease: [0.2, 0.7, 0.2, 1] }}
-        className="relative mx-auto mt-16 max-w-[1360px] [mask-image:linear-gradient(to_bottom,black_72%,transparent)]"
+        className="relative mx-auto mt-14 max-w-[1280px] px-6"
       >
         <div className="aspect-[1.7] w-full">
           <HeroFigure policy={policy} />
         </div>
       </motion.div>
 
-      <div className="relative -mt-24 flex justify-center px-6 pb-24 md:-mt-32">
+      <div className="relative mt-2 flex justify-center px-6 pb-28">
         <div className="flex items-center gap-4 rounded-full border border-[var(--edge)] bg-[rgb(242_240_235/0.82)] py-1.5 pl-4 pr-1.5 font-mono text-[12px] text-[var(--ink)] backdrop-blur-md">
           <span className="hidden sm:inline">anand vihar</span>
           <span className="tabular text-[var(--ink-hi)]">
@@ -120,8 +120,7 @@ function Problem() {
   return (
     <section className="mx-auto max-w-[1240px] px-6 py-28 md:py-40">
       <motion.p {...rise} className="max-w-[980px] text-[clamp(30px,4.2vw,56px)] font-medium leading-[1.08] tracking-[-0.035em] text-[var(--ink-hi)]">
-        Every winter, Delhi argues about air policies nobody has tested.{" "}
-        <span className="text-[var(--ink)]">Consultants take months. Debates run on numbers no one checked. And nobody says how sure they are.</span>
+        Every winter, Delhi argues about air policies <span className="text-[var(--ink)]">nobody has tested.</span>
       </motion.p>
     </section>
   );
@@ -137,17 +136,17 @@ function How() {
     return () => window.clearInterval(id);
   }, [inView]);
   const copy = [
-    "The compiler turns your sentence into typed parameters. Anything you didn't say is marked as an assumption.",
-    "A deterministic grid model, not an agent, estimates the change per cell, as a range, with an input fingerprint.",
-    "Engineer, epidemiologist, economist and a skeptic on a different model attack the inputs. Each objection names what it would change.",
-    "The verifier checks sourcing only. Accepted, rejected, or [ASK]. Accepted objections re-run the simulator.",
-    "The brief is written from accepted claims only. Gaps become stated limitations, not footnotes.",
+    "Your sentence becomes parameters. Gaps are marked, never guessed.",
+    "A deterministic model estimates the change as a range.",
+    "Four agents attack the inputs. Each names what it would change.",
+    "Unsourced claims are rejected. Accepted ones re-run the model.",
+    "The brief uses accepted claims only.",
   ];
   return (
     <section id="how" ref={ref} className="border-t border-[var(--edge)]">
       <div className="mx-auto max-w-[1240px] px-6 py-28">
-        <motion.div {...rise} className="flex items-end justify-between gap-6">
-          <h2 className="text-[clamp(34px,4.2vw,58px)] ">Five stages. Every one writes a file.</h2>
+        <motion.div {...rise} className="flex items-baseline justify-between gap-6">
+          <h2 className="text-[clamp(34px,4.2vw,58px)] leading-none">Five stages. Every one writes a file.</h2>
           <span className="hidden font-mono text-[11px] tracking-wider text-[var(--ink)] md:block">FIG 02 · RUNS/&lt;RUN-ID&gt;/</span>
         </motion.div>
         <motion.div {...rise} className="mt-14">
@@ -185,9 +184,6 @@ function Receipts() {
           <h2 className="mt-4 text-[clamp(34px,4.2vw,58px)] leading-[1.02]">
             Numbers come from the simulator and the ledger. <em>Never from the agents.</em>
           </h2>
-          <p className="mt-5 max-w-md text-[15.5px] leading-relaxed text-[var(--ink)]">
-            If an agent could produce a figure, the verifier would have nothing to check. So agents argue about assumptions, and every number on screen links to the row it came from.
-          </p>
         </motion.div>
         <motion.div {...rise} className="overflow-hidden rounded-2xl border border-[var(--edge)] bg-[var(--panel)]">
           {rows.map((r, i) => (
@@ -228,17 +224,17 @@ function Honest() {
                 <div className="absolute -bottom-3 -translate-x-1/2 font-mono text-[10.5px] text-[var(--ink-hi)]" style={{ left: `${pct(s.zoneBefore)}%` }}>{fmt(s.zoneBefore)}</div>
               </div>
             ),
-            d: "“Under these assumptions, the estimated reduction is X to Y.” Never a crisp number the model can't justify.",
+            d: "Estimates come as a range under stated assumptions.",
           },
           {
             k: "Thin data looks thin",
             v: <div className="mt-8 h-10 rounded-md bg-[repeating-linear-gradient(135deg,rgb(28_27_25/0.35)_0_1.5px,transparent_1.5px_7px)] [mask-image:linear-gradient(90deg,transparent,black_30%,black)]" />,
-            d: "Where sensors are sparse, the band widens and the map is hatched instead of looking confident.",
+            d: "Sparse sensors widen the band and hatch the map.",
           },
           {
             k: "It can say no",
             v: <div className="mt-8 font-mono text-[13px] leading-relaxed text-[var(--ink)]"><span className="text-[var(--ink-hi)] line-through decoration-[var(--accent)]">Ban diesel autos in ITO</span><br /><span className="text-[var(--accent)]">→ fleet is CNG · effect ≈ 0</span></div>,
-            d: "Delhi's autos already run on CNG. The tool flags it before a single agent speaks.",
+            d: "Delhi's autos already run on CNG. The tool says so.",
           },
         ].map((c) => (
           <motion.div key={c.k} {...rise} className="border-[var(--edge)] p-6 md:border-l md:first:border-l-0">
@@ -265,9 +261,7 @@ function Replay() {
         <motion.div {...rise}>
           <span className="font-mono text-[11px] tracking-wider text-[var(--ink)]">REPLAY · ODD-EVEN, JAN 2016</span>
           <h2 className="mt-4 text-[clamp(34px,4.2vw,58px)] leading-[1.02]">Checked against what actually happened.</h2>
-          <p className="mt-5 max-w-md text-[15.5px] leading-relaxed text-[var(--ink)]">
-            Run a past policy through the same pipeline and compare the estimate with the observed change. One honest replay is worth more than ten features.
-          </p>
+          <p className="mt-5 max-w-md text-[15.5px] leading-relaxed text-[var(--ink)]">Past policy in, estimate out, compared with what was observed.</p>
         </motion.div>
         <motion.div {...rise} className="rounded-2xl border border-[var(--edge)] bg-[var(--panel)] p-6">
           {[
@@ -296,16 +290,16 @@ function Replay() {
 
 function Stack() {
   const items = [
-    ["Strands Agents SDK", "Council and verifier orchestration"],
-    ["Bedrock AgentCore Runtime", "One endpoint hosts the orchestrator; the UI makes one call"],
-    ["Step Functions · Map", "Scenario variants in parallel for the confidence band"],
-    ["Lambda + DynamoDB", "The provenance ledger every claim is checked against"],
+    ["Strands Agents", "The council and the verifier"],
+    ["AgentCore Runtime", "One endpoint, one call"],
+    ["Step Functions", "Variants in parallel"],
+    ["Lambda + DynamoDB", "The source ledger"],
   ];
   return (
     <section id="stack" className="border-t border-[var(--edge)]">
       <div className="mx-auto max-w-[1240px] px-6 py-28">
-        <motion.div {...rise} className="flex items-end justify-between gap-6">
-          <h2 className="text-[clamp(34px,4.2vw,58px)] ">AWS only where it adds value.</h2>
+        <motion.div {...rise} className="flex items-baseline justify-between gap-6">
+          <h2 className="text-[clamp(34px,4.2vw,58px)] leading-none">AWS only where it adds value.</h2>
           <span className="hidden font-mono text-[11px] tracking-wider text-[var(--ink)] md:block">FIG 04 · WHERE IT RUNS</span>
         </motion.div>
         <div className="mt-12 grid items-center gap-12 lg:grid-cols-[1.4fr_1fr]">
