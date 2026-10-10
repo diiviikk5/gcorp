@@ -47,6 +47,10 @@ def rows() -> dict[str, dict]:
         r = {**r, "retrievedAt": r.get("retrievedAt", RETRIEVED)}
         r["scopeLevel"] = SCOPE_LEVEL.get(r["id"], "city")
         out[r["id"]] = r
+    # Real pulls (gcorp data pull) override demo rows and add per-zone rows.
+    from .data import verified_rows
+    for r in verified_rows():
+        out[r["id"]] = {**out.get(r["id"], {}), **r, "scopeLevel": r.get("scopeLevel", out.get(r["id"], {}).get("scopeLevel", "city"))}
     city, _, _ = get_city()
     for s in city.stations:
         out[s.ledger_ref] = {
@@ -55,6 +59,10 @@ def rows() -> dict[str, dict]:
             "scope": f"Station {s.id}, 24 h mean", "status": "demo", "scopeLevel": "point",
         }
     return out
+
+
+def reload() -> None:
+    rows.cache_clear()
 
 
 def get(row_id: str) -> dict | None:

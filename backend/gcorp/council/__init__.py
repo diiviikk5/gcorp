@@ -73,6 +73,13 @@ class AgentBackend(Protocol):
 VEHICLES = {"trucks", "cars", "autos", "twoWheelers", "buses"}
 
 
+def school_ref(c: "Context") -> str:
+    """Prefer the verified per-zone OSM count when `gcorp data pull` has run."""
+    from .. import ledger
+    rid = f"L-012-{c.scenario.zone_id}"
+    return rid if ledger.get(rid) else "L-012"
+
+
 class RuleBackend:
     """Deterministic playbooks. Each draft records the ledger rows it opened."""
 
@@ -108,9 +115,9 @@ class RuleBackend:
             return [Draft("epidemiologist", "Agreed: no exposure change to attribute. Any health claim here would be fabricated.", [])]
         night = str(c.scenario.value("hours")).startswith("23")
         return [
-            Draft("epidemiologist", f"Exposure concentrates near arterials: the school count within reach of an arterial [[L-012]] puts children close to the corridor."
+            Draft("epidemiologist", f"Exposure concentrates near arterials: the school count within reach of an arterial [[{school_ref(c)}]] puts children close to the corridor."
                   + (" Night-time entry [[L-015]] means the residual load lands on residents at home." if night else ""),
-                  ["L-012"] + (["L-015"] if night else []), focus=(1, -2)),
+                  [school_ref(c)] + (["L-015"] if night else []), scope="zone" if school_ref(c) != "L-012" else "city", focus=(1, -2)),
             Draft("epidemiologist", f"This should prevent a meaningful number of asthma admissions in {c.where}.", ["L-022"], scope="zone"),
         ]
 

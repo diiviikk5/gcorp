@@ -122,6 +122,10 @@ def compile_policy(text: str, zone_id: str | None = None, overrides: dict | None
         hours, hours_origin = "07:00 – 23:00", "stated"
 
     weather, weather_origin = "average", "assumed"
+    from .data import load as _load_cache
+    _w = _load_cache("weather.json")
+    if _w:
+        weather = _w["row"].get("regime", "average")  # last week's measured regime (L-024), still an assumption
     if re.search(r"\b(calm|still|inversion|smog episode)\b", t):
         weather, weather_origin = "calm", "stated"
     elif re.search(r"\b(windy|breezy|strong wind)\b", t):
