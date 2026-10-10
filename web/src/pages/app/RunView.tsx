@@ -5,12 +5,13 @@ import { ChevronRight, FastForward, FileText, Pause, Play, RotateCcw, Share2, Tr
 import { IsoCity, type CityAgent } from "@/components/city/IsoCity";
 import { ScenarioCard, StageRail } from "@/components/app/run/ScenarioPanel";
 import { Transcript } from "@/components/app/run/Transcript";
+import { Chamber } from "@/components/app/run/Chamber";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Segmented } from "@/components/ui/Segmented";
 import { AqiScale, RangeBar } from "@/components/ui/Aqi";
 import { RefChip } from "@/components/ui/RichText";
-import { useRun } from "@/store/runs";
+import { useRun, useRuns } from "@/store/runs";
 import { derive, eventIndex, usePlayback } from "@/store/playback";
 import { AGENTS, STAGES } from "@/sim/council";
 import type { AgentId } from "@/lib/types";
@@ -27,6 +28,10 @@ export default function RunView() {
   const [layer, setLayer] = useState<"haze" | "tiles" | "delta">("haze");
   const [view, setView] = useState<"auto" | "before" | "after">("auto");
   const [panel, setPanel] = useState<"council" | "policy">("council");
+  const [stageView, setStageView] = useState<"city" | "chamber">(() => (sp.get("view") === "chamber" ? "chamber" : "city"));
+  const interjectRun = useRuns((s) => s.interject);
+  const [question, setQuestion] = useState("");
+  const [asking, setAsking] = useState(false);
   const duration = bundle?.script.duration ?? 0;
 
   useEffect(() => {
@@ -122,22 +127,26 @@ export default function RunView() {
         {/* Center: the city */}
         <section className="relative min-h-[420px] overflow-hidden bg-[radial-gradient(ellipse_at_50%_40%,#f8f7f3_0%,#ebe8e1_75%)]">
           <div className="grid-bg pointer-events-none absolute inset-0 opacity-60" />
+          {stageView === "chamber" ? (
+            <div className="absolute inset-0 pt-16"><Chamber events={d.events} /></div>
+          ) : (
           <IsoCity
-            mode="app"
-            className="absolute inset-0"
-            field={field}
-            showAfter={showAfter}
-            layer={layer}
-            zoneId={scenario.zoneId}
-            focus={d.focus}
-            agents={CITY_AGENTS}
-            activeAgent={d.activeAgent}
-            verdict={verdictFocus}
-            policyClass={scenario.vehicleClass}
-          />
+              mode="app"
+              className="absolute inset-0"
+              field={field}
+              showAfter={showAfter}
+              layer={layer}
+              zoneId={scenario.zoneId}
+              focus={d.focus}
+              agents={CITY_AGENTS}
+              activeAgent={d.activeAgent}
+              verdict={verdictFocus}
+              policyClass={scenario.vehicleClass}
+            />
+          )}
 
           {/* Result card */}
-          <div className="pointer-events-none absolute left-4 top-4 w-[280px]">
+          <div className={cn("pointer-events-none absolute left-4 top-4 w-[280px]", stageView === "chamber" && "hidden")}>
             <div className="glass pointer-events-auto rounded-xl p-3.5">
               <div className="flex items-center justify-between">
                 <span className="eyebrow">{scenario.zoneId === "all" ? "City mean" : `${scenario.params.zone.value} · zone mean`}</span>
@@ -173,14 +182,19 @@ export default function RunView() {
             </div>
           </div>
 
+          {/* City / Chamber */}
+          <div className="absolute left-1/2 top-4 z-10 -translate-x-1/2">
+            <Segmented value={stageView} onChange={setStageView} className="glass" size="md" options={[{ value: "city", label: "City" }, { value: "chamber", label: "Chamber" }]} />
+          </div>
+
           {/* Layer controls */}
-          <div className="absolute right-4 top-4 flex flex-col items-end gap-2">
+          <div className={cn("absolute right-4 top-4 flex flex-col items-end gap-2", stageView === "chamber" && "hidden")}>
             <Segmented value={layer} onChange={setLayer} className="glass" options={[{ value: "haze", label: "Haze" }, { value: "tiles", label: "AQI grid" }, { value: "delta", label: "Change" }]} />
             <Segmented value={view} onChange={setView} className="glass" options={[{ value: "auto", label: "Live" }, { value: "before", label: "Before" }, { value: "after", label: "After" }]} />
           </div>
 
           {/* Bottom bar: legend + timeline */}
-          <div className="pointer-events-none absolute inset-x-4 bottom-4 flex flex-wrap items-end justify-between gap-3">
+          <div className={cn("pointer-events-none absolute inset-x-4 bottom-4 flex flex-wrap items-end justify-between gap-3", stageView === "chamber" && "hidden")}>
             <div className="glass pointer-events-auto flex items-center gap-4 rounded-xl px-3.5 py-2.5 text-[11px] text-mute">
               {layer === "delta" ? (
                 <div className="flex items-center gap-3">
@@ -216,7 +230,7 @@ export default function RunView() {
 
           <AnimatePresence>
             {d.complete && pctDone >= 1 && !blocked && (
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute left-1/2 top-4 -translate-x-1/2">
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute bottom-[84px] left-1/2 -translate-x-1/2">
                 <Link to={`/app/runs/${rec.id}/brief`} className="glass flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[12px] font-medium text-fg hover:bg-black/10">
                   <span className="size-1.5 rounded-full bg-ok" /> Brief ready: {fmt(sim.summary.deltaLo)}–{fmt(sim.summary.deltaHi)} AQI points <ChevronRight className="size-3.5" />
                 </Link>
@@ -232,7 +246,30 @@ export default function RunView() {
           </div>
           <div className="min-h-0 flex-1">
             {panel === "council" ? (
-              <Transcript events={d.events} claims={d.claims} ctx={ctx} runId={rec.id} activeAgent={d.activeAgent} complete={d.complete} />
+              <div className="flex h-full flex-col">
+                <div className="min-h-0 flex-1">
+                  <Transcript events={d.events} claims={d.claims} ctx={ctx} runId={rec.id} activeAgent={d.activeAgent} complete={d.complete} />
+                </div>
+                {bundle.remote && (
+                  <form
+                    className="border-t border-line p-3"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!question.trim() || asking) return;
+                      const from = duration;
+                      setAsking(true);
+                      interjectRun(rec.id, question.trim())
+                        .then(() => { setQuestion(""); seek(from); setPlaying(true); })
+                        .finally(() => setAsking(false));
+                    }}
+                  >
+                    <div className="flex items-center gap-2 rounded-lg px-3 ring-1 ring-inset ring-line-2 focus-within:ring-black/40">
+                      <input value={question} onChange={(e) => setQuestion(e.target.value)} disabled={!d.complete || asking} placeholder={d.complete ? "Challenge the council: what if cameras at every entry?" : "You can interrupt once the run finishes"} className="h-10 min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-faint" />
+                      <button type="submit" disabled={!d.complete || asking || !question.trim()} className="text-[12px] font-medium text-fg disabled:text-faint">{asking ? "Asking…" : "Ask"}</button>
+                    </div>
+                  </form>
+                )}
+              </div>
             ) : (
               <div className="h-full space-y-7 overflow-y-auto p-4">
                 <ScenarioCard scenario={scenario} overrides={d.params} runId={rec.id} />
