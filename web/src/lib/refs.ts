@@ -44,6 +44,8 @@ export function resolveRef(ref: string, ctx?: RefContext): Resolved {
       deltaRange: `${fmt(s.deltaLo)}–${fmt(s.deltaHi)}`,
       pctRange: `${fmt(s.pctLo, 1)}–${fmt(s.pctHi, 1)}%`,
       spillover: `${s.spillover < 0 ? "+" : "−"}${fmt(Math.abs(s.spillover), 1)} AQI`,
+      ceiling: s.ceilingPct !== undefined ? `${fmt(s.ceilingPct, 1)}%` : "—",
+      regional: s.regionalPct !== undefined ? `${fmt(s.regionalPct)}%` : "—",
       deltaLo: fmt(s.deltaLo),
       deltaHi: fmt(s.deltaHi),
     };

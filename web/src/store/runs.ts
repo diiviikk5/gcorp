@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useMemo } from "react";
 import type { ParamKey, RunRecord, Scenario, SimResult, SimSummary } from "@/lib/types";
-import { api, type BackendRun, type BackendSim } from "@/lib/api";
+import { api, type BackendRun, type BackendSim, type Confidence } from "@/lib/api";
 import { registerRemoteRows } from "@/data/ledger";
 import { compile } from "@/sim/compiler";
 import { buildScript, type Script } from "@/sim/council";
@@ -101,6 +101,7 @@ export interface RunBundle {
   sims: Record<number, SimResult>;
   finalScenario: Scenario;
   remote: boolean;
+  confidence?: Confidence | null;
 }
 
 const cache = new Map<string, RunBundle>();
@@ -126,7 +127,7 @@ function adapt(r: BackendRun): RunBundle {
   const sims: Record<number, SimResult> = {};
   for (const [k, v] of Object.entries(r.sims)) sims[Number(k)] = adaptSim(v);
   const script: Script = { events: r.events, claims: r.claims, finalOverrides: r.finalOverrides as Partial<Record<ParamKey, number>>, duration: r.duration };
-  return { record: toRecord(r), script, sims, finalScenario: withOverrides(r.scenario, r.finalOverrides as Partial<Record<ParamKey, number | string>>), remote: true };
+  return { record: toRecord(r), script, sims, finalScenario: withOverrides(r.scenario, r.finalOverrides as Partial<Record<ParamKey, number | string>>), remote: true, confidence: r.confidence };
 }
 
 export function getBundle(record: RunRecord, remote?: BackendRun): RunBundle {

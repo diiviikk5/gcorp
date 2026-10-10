@@ -15,6 +15,8 @@ export const AGENTS: Record<AgentId, { name: string; role: string; model: string
   skeptic: { name: "Skeptic", role: "Argues against. Names the weakest assumption.", model: "Different model family", color: "var(--color-a-skeptic)", short: "SK" },
   verifier: { name: "Verifier", role: "Checks sourcing only, never argument quality", model: "Claude Haiku + ledger lookup", color: "var(--color-a-verifier)", short: "VF" },
   writer: { name: "Brief writer", role: "Writes only from accepted claims", model: "Template", color: "var(--color-a-writer)", short: "BW" },
+  apportionment: { name: "Source analyst", role: "Is the target big enough?", model: "Rule playbook", color: "var(--color-a-engineer)", short: "SA" },
+  externalities: { name: "Externalities", role: "What comes in from outside?", model: "Rule playbook", color: "var(--color-a-engineer)", short: "EX" },
   planner: { name: "Planner", role: "You", model: "Human", color: "var(--color-accent)", short: "YOU" },
 };
 

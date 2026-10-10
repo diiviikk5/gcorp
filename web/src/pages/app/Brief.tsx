@@ -94,6 +94,26 @@ export default function Brief() {
           )}
         </div>
 
+        {b.confidence && (
+          <Section title="How sure are we">
+            <div className="flex items-baseline gap-3">
+              <span className={cn("text-[22px] font-semibold tracking-tight", b.confidence.grade === "Low" && "text-bad")}>{b.confidence.grade}</span>
+              <span className="font-mono text-[12px] text-mute">score {b.confidence.score.toFixed(2)}{b.confidence.highVariance ? " · high variance" : ""}</span>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-2.5 sm:grid-cols-4">
+              {([["Sensor coverage", b.confidence.components.coverage], ["Verified sources", b.confidence.components.sources], ["Stated inputs", b.confidence.components.assumptions], ["Stability under debate", b.confidence.components.stability]] as const).map(([k, v]) => (
+                <div key={k}>
+                  <div className="text-[11.5px] text-mute">{k}</div>
+                  <div className="mt-1 h-1 rounded-full bg-black/[0.07]"><div className="h-1 rounded-full bg-fg" style={{ width: `${Math.round(v * 100)}%` }} /></div>
+                </div>
+              ))}
+            </div>
+            {b.confidence.reasons.length > 0 && (
+              <ul className="mt-4 space-y-1 text-[13.5px] text-mute">{b.confidence.reasons.map((r) => <li key={r}>· {r}</li>)}</ul>
+            )}
+          </Section>
+        )}
+
         {s.hourly && s.hourly.some((v) => v > 0) && (
           <Section title="When the policy acts (mid estimate, AQI points by hour)">
             <HourlyBars values={s.hourly} highlight={(() => { const i = s.hourly!.indexOf(Math.max(...s.hourly!)); return [i, i + 1] as [number, number]; })()} height={90} />

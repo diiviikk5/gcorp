@@ -147,6 +147,7 @@ export function compile({ text, zoneId, overrides = {} }: CompileInput): Scenari
     durationDays: p("durationDays", "Duration", duration, durationOrigin, { unit: "days" }),
     startDate: p("startDate", "Start", start, startOrigin),
     hours: p("hours", "Hours", hours, hoursOrigin, { ledgerRef: hoursOrigin === "stated" && hours.startsWith("23") ? "L-015" : undefined }),
+    regionalPct: p("regionalPct", "Regional smoke share", ({ 1: 26, 2: 20, 3: 14, 4: 10, 5: 10, 6: 8, 7: 6, 8: 6, 9: 10, 10: 25, 11: 32, 12: 28 } as Record<number, number>)[+start.slice(5, 7)] ?? 25, "assumed", { unit: "%", ledgerRef: "L-032", note: "Transboundary share for the start month." }),
     weather: p("weather", "Weather", /calm|inversion/.test(t) ? "calm" : /windy/.test(t) ? "windy" : "average", /calm|inversion|windy/.test(t) ? "stated" : "assumed", { ledgerRef: "L-024", note: "Mixing regime used by the simulator." }),
   };
 

@@ -173,6 +173,12 @@ export default function RunView() {
                   <div className="mt-2 text-[11.5px] leading-relaxed text-mute">
                     Under these assumptions, the estimated reduction is <RefChip refId="sim:deltaRange" ctx={ctx} runId={rec.id} /> AQI points (<RefChip refId="sim:pctRange" ctx={ctx} runId={rec.id} />).
                   </div>
+                  {d.complete && bundle.confidence && (
+                    <div className="mt-2 flex items-center justify-between text-[11.5px]">
+                      <span className="text-mute">Confidence</span>
+                      <span className={cn("font-medium", bundle.confidence.grade === "Low" && "text-bad")}>{bundle.confidence.grade}{bundle.confidence.highVariance ? " · high variance" : ""}</span>
+                    </div>
+                  )}
                   {sim.summary.coverage !== "good" && (
                     <div className="mt-2 flex items-center gap-1.5 text-[11px] text-warn"><TriangleAlert className="size-3" /> Thin sensor coverage widens this band</div>
                   )}

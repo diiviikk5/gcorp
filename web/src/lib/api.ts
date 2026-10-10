@@ -31,7 +31,10 @@ export interface BackendRun {
   finalOverrides: Record<string, number | string>;
   duration: number;
   observed?: { label: string; deltaPct: number; ledgerRef: string } | null;
+  confidence?: Confidence | null;
 }
+
+export interface Confidence { score: number; grade: "High" | "Medium" | "Low"; highVariance: boolean; components: { coverage: number; sources: number; assumptions: number; stability: number; openQuestions: number; rejected: number }; reasons: string[] }
 
 export const api = {
   health: () => j<{ ok: boolean; runs: number; ledgerRows: number }>("/api/health"),

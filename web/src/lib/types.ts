@@ -74,7 +74,8 @@ export type ParamKey =
   | "durationDays"
   | "startDate"
   | "hours"
-  | "weather";
+  | "weather"
+  | "regionalPct";
 
 export interface CompilerWarning {
   level: "info" | "warn" | "block";
@@ -110,6 +111,8 @@ export interface SimSummary {
   childHoursLo?: number;
   childHoursHi?: number;
   hourly?: number[];
+  ceilingPct?: number;
+  regionalPct?: number;
 }
 
 export interface SimResult {
@@ -131,7 +134,9 @@ export type AgentId =
   | "skeptic"
   | "verifier"
   | "writer"
-  | "planner";
+  | "planner"
+  | "apportionment"
+  | "externalities";
 
 export type StageId = "scope" | "simulate" | "challenge" | "verify" | "decide";
 
