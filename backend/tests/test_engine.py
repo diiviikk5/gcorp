@@ -44,3 +44,14 @@ def test_api_roundtrip():
         rid = runs[0]["id"]
         out = client.post(f"/api/runs/{rid}/interject", json={"text": "what if compliance is 90%?"}).json()
         assert any(e["type"] == "sim" for e in out["events"])
+
+
+def test_role_contracts_are_enforced():
+    import pytest
+    from gcorp.council import AGENTS
+    from gcorp.orchestrator import Recorder, Run
+    from gcorp.compiler import compile_policy
+    assert "verify" in AGENTS["verifier"]["tools"] and "sim.run" not in AGENTS["engineer"]["tools"]
+    rec = Recorder(Run("r-test", "assessment", "now", compile_policy(FLAGSHIP, "anandvihar")))
+    with pytest.raises(PermissionError):
+        rec.action("engineer", "sim.run", "round 9")

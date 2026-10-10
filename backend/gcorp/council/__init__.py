@@ -12,23 +12,33 @@ else in the pipeline changes.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Protocol
+
+import yaml
 
 from ..city import ZONE_BY_ID
 from ..scenario import Scenario
 from ..simulator import SimResult
 
-AGENTS = {
-    "compiler": {"name": "Compiler", "role": "Turns the sentence into parameters", "model": "Rule parser"},
-    "simulator": {"name": "Simulator", "role": "Deterministic grid model, not an agent", "model": "Python · no LLM"},
-    "engineer": {"name": "Engineer", "role": "How much do emissions actually change?", "model": "Rule playbook"},
-    "epidemiologist": {"name": "Epidemiologist", "role": "Who breathes it, and for how long?", "model": "Rule playbook"},
-    "economist": {"name": "Economist", "role": "Who bears the cost?", "model": "Rule playbook"},
-    "skeptic": {"name": "Skeptic", "role": "Argues against. Names the weakest assumption.", "model": "Rule playbook (independent)"},
-    "verifier": {"name": "Verifier", "role": "Checks sourcing only", "model": "Ledger lookup + rules"},
-    "writer": {"name": "Brief writer", "role": "Writes only from accepted claims", "model": "Template"},
-    "planner": {"name": "Planner", "role": "You", "model": "Human"},
-}
+ROLES_DIR = Path(__file__).parent / "roles"
+
+
+def load_roles() -> dict[str, dict]:
+    """Role contracts live in council/roles/*.md (YAML frontmatter + prose)."""
+    out: dict[str, dict] = {}
+    for f in sorted(ROLES_DIR.glob("*.md")):
+        text = f.read_text(encoding="utf-8")
+        _, fm, body = text.split("---", 2)
+        meta = yaml.safe_load(fm)
+        out[meta["id"]] = {
+            "name": meta["name"], "role": meta["question"], "model": meta.get("backend", "rules"),
+            "tools": meta.get("tools", []), "mayChange": meta.get("may_change", []), "contract": body.strip(),
+        }
+    return out
+
+
+AGENTS = load_roles()
 
 
 @dataclass

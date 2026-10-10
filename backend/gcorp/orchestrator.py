@@ -76,6 +76,9 @@ class Recorder:
         self.emit(dt, type="stage", stage=stage, status=status)
 
     def action(self, agent: str, tool: str, target: str, detail: str = "", dt: int = 350):
+        allowed = AGENTS.get(agent, {}).get("tools", [])
+        if tool not in allowed:
+            raise PermissionError(f"{agent} is not allowed to use {tool} (contract: council/roles/{agent}.md)")
         self.emit(dt, type="action", agent=agent, tool=tool, target=target, detail=detail)
 
     def message(self, agent: str, text: str, dt: int = 900, claim_id: str | None = None, focus: list[int] | None = None) -> str:
@@ -131,6 +134,8 @@ def _debate(run: Run, rec: Recorder, drafts: list[Draft]) -> dict[str, float | s
         rec.emit(900, **ev)
         if v.status == "accepted" and d.changes:
             for k, val in d.changes.items():
+                if k not in AGENTS[d.agent]["mayChange"]:
+                    continue  # the role's contract does not let it move this input
                 frm = run.current.value(k)
                 rec.action(d.agent, "param.propose", k, f"{frm} → {val}", dt=250)
                 rec.emit(350, type="param", key=k, **{"from": frm, "to": val}, claimId=cid)
