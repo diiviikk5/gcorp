@@ -1,3 +1,150 @@
+import { Link, useParams } from "react-router";
+import { ArrowLeft, Link2, Printer } from "lucide-react";
+import { useState } from "react";
+import { PageHeader } from "@/components/app/AppLayout";
+import { Button } from "@/components/ui/Button";
+import { RefChip, RichText } from "@/components/ui/RichText";
+import { RangeBar } from "@/components/ui/Aqi";
+import { useRun } from "@/store/runs";
+import { recommend } from "@/lib/recommend";
+import { AGENTS } from "@/sim/council";
+import { paramDisplay } from "@/lib/refs";
+import type { ParamKey } from "@/lib/types";
+import { fmt } from "@/lib/aqi";
+import { cn } from "@/lib/cn";
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="border-t border-line py-7">
+      <h2 className="text-[12px] font-medium text-mute">{title}</h2>
+      <div className="mt-3">{children}</div>
+    </section>
+  );
+}
+
 export default function Brief() {
-  return <div className="p-8 text-mute">Brief</div>;
+  const { id } = useParams();
+  const b = useRun(id);
+  const [copied, setCopied] = useState(false);
+  if (!b) return <div className="p-10 text-mute">Brief not found.</div>;
+
+  const rec = b.record;
+  const sc = rec.scenario;
+  const sim = b.sims[2];
+  const s = sim.summary;
+  const ctx = { scenario: sc, sim, overrides: b.script.finalOverrides };
+  const r = recommend(b);
+  const claims = Object.values(b.script.claims);
+  const accepted = claims.filter((c) => c.status === "accepted");
+  const asks = claims.filter((c) => c.status === "ask");
+  const rejected = claims.filter((c) => c.status === "rejected");
+  const assumed = (Object.keys(sc.params) as ParamKey[]).filter((k) => sc.params[k].origin !== "stated" || b.script.finalOverrides[k] !== undefined);
+  const cited = Array.from(new Set(accepted.map((c) => c.ledgerRef).filter(Boolean))) as string[];
+
+  return (
+    <div>
+      <PageHeader
+        title="Brief"
+        crumbs={
+          <div className="flex items-center gap-1.5 text-[13px]">
+            <Link to={`/app/runs/${rec.id}`} className="flex items-center gap-1 text-mute hover:text-fg"><ArrowLeft className="size-3.5" /> Run</Link>
+            <span className="text-faint">/</span>
+            <span className="font-medium">brief.md</span>
+          </div>
+        }
+        actions={
+          <>
+            <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard?.writeText(location.href); setCopied(true); setTimeout(() => setCopied(false), 1400); }}>
+              <Link2 className="size-3.5" /> {copied ? "Copied" : "Copy link"}
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => window.print()}><Printer className="size-3.5" /> Print</Button>
+          </>
+        }
+      />
+
+      <article className="mx-auto max-w-[720px] px-6 pb-24 pt-12">
+        <div className="font-mono text-[11px] text-faint">
+          {new Date(rec.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} · fingerprint <RefChip refId="fp" ctx={ctx} runId={rec.id} />
+        </div>
+        <h1 className="mt-3 text-[30px] font-semibold leading-tight tracking-[-0.03em]">{sc.title}</h1>
+        <p className="mt-2 text-[14px] text-mute">“{sc.text}”</p>
+
+        <div className="mt-8 rounded-xl border border-line p-6">
+          <div className={cn("text-[13px] font-medium", r.verdict === "reject" ? "text-bad" : "text-fg")}>{r.label}</div>
+          <p className="mt-1 text-[14px] text-mute">{r.line}</p>
+          <div className="mt-6 text-[22px] leading-snug tracking-[-0.02em]">
+            Under these assumptions, the estimated reduction is <RefChip refId="sim:deltaRange" ctx={ctx} runId={rec.id} /> AQI points{" "}
+            <span className="text-mute">(<RefChip refId="sim:pctRange" ctx={ctx} runId={rec.id} />)</span>.
+          </div>
+          <RangeBar className="mt-5" before={s.zoneBefore} lo={s.zoneAfterLo} hi={s.zoneAfterHi} min={Math.max(0, s.zoneBefore - 120)} max={s.zoneBefore + 20} />
+          <div className="mt-1 flex justify-between font-mono text-[11px] text-faint">
+            <span>{sc.zoneId === "all" ? "city mean" : `${sc.params.zone.value} mean`}</span>
+            <span>{fmt(s.zoneBefore)} → {fmt(s.zoneAfterLo)}–{fmt(s.zoneAfterHi)}</span>
+          </div>
+          {rec.observed && (
+            <div className="mt-4 flex justify-between border-t border-line pt-3 text-[13px]">
+              <span className="text-mute">{rec.observed.label}</span>
+              <RefChip refId={rec.observed.ledgerRef} runId={rec.id} />
+            </div>
+          )}
+        </div>
+
+        <Section title="Findings (accepted claims only)">
+          <ul className="space-y-3">
+            {accepted.map((c) => (
+              <li key={c.id} className="grid grid-cols-[110px_1fr] gap-3 text-[14px] leading-relaxed">
+                <span className="text-mute">{AGENTS[c.agent].name}</span>
+                <RichText text={c.text} ctx={ctx} runId={rec.id} />
+              </li>
+            ))}
+          </ul>
+        </Section>
+
+        {asks.length > 0 && (
+          <Section title="Open questions for the planner">
+            <ul className="space-y-2 text-[14px] leading-relaxed">
+              {asks.map((c) => (
+                <li key={c.id} className="flex gap-3">
+                  <span className="font-mono text-[12px] text-mute">[ASK]</span>
+                  <span>{c.text} <span className="text-mute">No source yet.</span></span>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )}
+
+        <Section title="Assumptions and limitations">
+          <ul className="space-y-2 text-[14px]">
+            {assumed.map((k) => (
+              <li key={k} className="flex justify-between gap-4 border-b border-line pb-2">
+                <span className="text-mute">{sc.params[k].label}</span>
+                <span className="tabular">{b.script.finalOverrides[k] !== undefined ? <RefChip refId={`param:${k}`} ctx={ctx} runId={rec.id} /> : paramDisplay(sc, k)}</span>
+              </li>
+            ))}
+            {s.coverage !== "good" && <li className="text-mute">Sensor coverage in this zone is {s.coverage}; the range is wider as a result.</li>}
+            <li className="text-mute">The grid model estimates direction and rough magnitude, not precise AQI. This is not a forecast.</li>
+          </ul>
+        </Section>
+
+        {rejected.length > 0 && (
+          <Section title="Excluded from this brief">
+            <ul className="space-y-3 text-[14px]">
+              {rejected.map((c) => (
+                <li key={c.id}>
+                  <span className="text-mute line-through decoration-bad/70">{c.text}</span>
+                  <div className="mt-0.5 text-[12.5px] text-mute"><span className="text-bad">Rejected.</span> <RichText text={c.reason ?? ""} ctx={ctx} runId={rec.id} /></div>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )}
+
+        <Section title="Sources">
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
+            {cited.map((cid) => <RefChip key={cid} refId={cid} runId={rec.id} className="font-mono !text-[12px]" />)}
+          </div>
+        </Section>
+      </article>
+    </div>
+  );
 }
