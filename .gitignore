@@ -14,3 +14,4 @@ backend/runs/
 backend/.env
 .pytest_cache/
 backend/gcorp/data/cache/
+backend/gcorp.egg-info/
