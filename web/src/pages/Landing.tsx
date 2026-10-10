@@ -56,44 +56,36 @@ function Hero() {
   }, []);
 
   return (
-    <section className="relative overflow-hidden pt-36 md:pt-44">
-
-      <div className="relative mx-auto max-w-[1040px] px-6 text-center">
-        <h1 className="text-[clamp(56px,9vw,136px)] leading-[0.9]">
-          {["Test an air policy"].map((line) => (
-            <motion.span key={line} className="block" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: [0.2, 0.7, 0.2, 1] }}>
-              {line}
-            </motion.span>
-          ))}
-          <motion.span className="block text-[var(--ink)]" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.12, ease: [0.2, 0.7, 0.2, 1] }}>
+    <section className="relative flex h-[100svh] min-h-[680px] flex-col overflow-hidden pt-24">
+      <div className="relative z-10 mx-auto max-w-[1040px] px-6 text-center">
+        <h1 className="text-[clamp(40px,5.6vw,92px)] leading-[0.92]">
+          <motion.span className="block" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, ease: [0.2, 0.7, 0.2, 1] }}>
+            Test an air policy
+          </motion.span>
+          <motion.span className="block text-[var(--ink)]" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.1, ease: [0.2, 0.7, 0.2, 1] }}>
             <em>before</em> the city pays.
           </motion.span>
         </h1>
-        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 0.4 }} className="mx-auto mt-7 max-w-[540px] text-[17px] leading-relaxed text-[var(--ink)]">
-          AI agents debate it. Only sourced claims survive.
-        </motion.p>
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 0.55 }} className="mt-9 flex flex-wrap items-center justify-center gap-3">
-          <Link to="/app/new" className="btn-accent inline-flex h-11 items-center gap-2 rounded-full px-5 text-[14.5px] font-medium transition-colors">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.9, delay: 0.35 }} className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <Link to="/app/new" className="btn-accent inline-flex h-10 items-center gap-2 rounded-full px-5 text-[14px] font-medium transition-colors">
             Pre-check a policy <ArrowRight className="size-4" />
           </Link>
-          <Link to={LIVE_RUN} className="btn-line inline-flex h-11 items-center gap-2 rounded-full px-5 text-[14.5px] transition-shadow">
+          <Link to={LIVE_RUN} className="btn-line inline-flex h-10 items-center gap-2 rounded-full px-5 text-[14px] transition-shadow">
             Watch a live run
           </Link>
         </motion.div>
       </div>
 
       <motion.div
-        initial={{ opacity: 0, y: 40 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.6, delay: 0.3, ease: [0.2, 0.7, 0.2, 1] }}
-        className="relative mx-auto mt-14 max-w-[1280px] px-6"
+        transition={{ duration: 1.4, delay: 0.2, ease: [0.2, 0.7, 0.2, 1] }}
+        className="relative mt-3 min-h-0 flex-1 px-6"
       >
-        <div className="aspect-[1.7] w-full">
-          <HeroFigure policy={policy} />
-        </div>
+        <HeroFigure policy={policy} />
       </motion.div>
 
-      <div className="relative mt-2 flex justify-center px-6 pb-28">
+      <div className="relative z-10 flex justify-center px-6 pb-6">
         <div className="flex items-center gap-4 rounded-full border border-[var(--edge)] bg-[rgb(242_240_235/0.82)] py-1.5 pl-4 pr-1.5 font-mono text-[12px] text-[var(--ink)] backdrop-blur-md">
           <span className="hidden sm:inline">anand vihar</span>
           <span className="tabular text-[var(--ink-hi)]">
@@ -107,7 +99,7 @@ function Hero() {
           >
             Night truck ban
             <span className={cn("relative h-5 w-9 rounded-full transition-colors", policy ? "bg-[var(--accent)]" : "bg-[var(--detail)]")}>
-              <span className={cn("absolute top-0.5 size-4 rounded-full bg-[var(--ink-hi)] transition-transform", policy ? "translate-x-[18px]" : "translate-x-0.5")} />
+              <span className={cn("absolute top-0.5 size-4 rounded-full bg-white transition-transform", policy ? "translate-x-[18px]" : "translate-x-0.5")} />
             </span>
           </button>
         </div>
@@ -119,7 +111,7 @@ function Hero() {
 function Problem() {
   return (
     <section className="mx-auto max-w-[1240px] px-6 py-28 md:py-40">
-      <motion.p {...rise} className="max-w-[980px] text-[clamp(30px,4.2vw,56px)] font-medium leading-[1.08] tracking-[-0.035em] text-[var(--ink-hi)]">
+      <motion.p {...rise} className="max-w-[1000px] font-[family-name:var(--font-display)] text-[clamp(36px,5vw,72px)] leading-[1.02] tracking-[-0.02em] text-[var(--ink-hi)]">
         Every winter, Delhi argues about air policies <span className="text-[var(--ink)]">nobody has tested.</span>
       </motion.p>
     </section>

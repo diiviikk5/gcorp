@@ -45,10 +45,13 @@ function lots(x0: number, y0: number, x1: number, y1: number, rnd: () => number,
 
 export function HeroFigure({ policy, onTurn }: { policy: boolean; onTurn?: (i: number) => void }) {
   const K = useMemo(
-    () => frame([[0, 0, 0], [PLATE.w, 0, 0], [0, PLATE.d, 0], [PLATE.w, PLATE.d, 0], [CENTER[0], CENTER[1], COUNCIL_Z + 40], [0, 0, 160]], 0.02, 1.7),
+    () => frame([[0, 0, 0], [PLATE.w, 0, 0], [0, PLATE.d, 0], [PLATE.w, PLATE.d, 0], [CENTER[0], CENTER[1], COUNCIL_Z + 40], [0, 0, 160]], 0.06, 1.7),
     [],
   );
   const svgRef = useRef<HTMLDivElement>(null);
+  const stage = useRef<HTMLDivElement>(null);
+  const sky = useRef<SVGSVGElement>(null);
+  const tilt = useRef({ tx: 0, ty: 0, x: 0, y: 0 });
   const trucks = useRef<(SVGGElement | null)[]>([]);
   const cars = useRef<(SVGGElement | null)[]>([]);
   const [turn, setTurn] = useState(0);
@@ -181,6 +184,12 @@ export function HeroFigure({ policy, onTurn }: { policy: boolean; onTurn?: (i: n
           els[i]?.setAttribute("transform", `translate(${dx.toFixed(1)} ${dy.toFixed(1)})`);
         });
       };
+      // pointer parallax: whole drawing tilts a little, the council floats above it
+      const tl = tilt.current;
+      tl.x += (tl.tx - tl.x) * Math.min(1, dt * 4);
+      tl.y += (tl.ty - tl.y) * Math.min(1, dt * 4);
+      if (stage.current) stage.current.style.transform = `rotateX(${(-tl.y * 4).toFixed(2)}deg) rotateY(${(tl.x * 6).toFixed(2)}deg)`;
+      if (sky.current) sky.current.style.transform = `translate3d(${(tl.x * 14).toFixed(1)}px, ${(tl.y * 8 - 6).toFixed(1)}px, 40px)`;
       move(vehicles.tr, trucks.current, 36);
       move(vehicles.cr, cars.current, 13);
       if (acc > 0.35 && wins.length) {
@@ -251,7 +260,17 @@ export function HeroFigure({ policy, onTurn }: { policy: boolean; onTurn?: (i: n
 
   const layer = "absolute inset-0 h-full w-full [will-change:transform]";
   return (
-    <div ref={svgRef} className="relative h-full w-full" role="img" aria-label="Isometric city block in Anand Vihar with traffic, air sensors and a council of AI agents above it, wired to the sensors. The night truck ban removes trucks and thins the haze.">
+    <div
+      ref={svgRef}
+      onPointerMove={(e) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        tilt.current.tx = ((e.clientX - r.left) / r.width - 0.5) * 2;
+        tilt.current.ty = ((e.clientY - r.top) / r.height - 0.5) * 2;
+      }}
+      onPointerLeave={() => { tilt.current.tx = 0; tilt.current.ty = 0; }}
+      className="relative h-full w-full [perspective:1800px]"
+      role="img" aria-label="Isometric city block in Anand Vihar with traffic, air sensors and a council of AI agents above it, wired to the sensors. The night truck ban removes trucks and thins the haze.">
+      <div ref={stage} className="absolute inset-0 [transform-style:preserve-3d] [will-change:transform]">
       <svg viewBox={K.viewBox} className={layer} aria-hidden>
         <defs dangerouslySetInnerHTML={{ __html: GLOW_DEFS }} />
         <g dangerouslySetInnerHTML={{ __html: scene.plate + scene.back }} />
@@ -268,10 +287,11 @@ export function HeroFigure({ policy, onTurn }: { policy: boolean; onTurn?: (i: n
         <defs dangerouslySetInnerHTML={{ __html: GLOW_DEFS }} />
         <g dangerouslySetInnerHTML={{ __html: scene.sens + scene.front + scene.haze }} />
       </svg>
-      <svg viewBox={K.viewBox} className={layer} aria-hidden>
+      <svg ref={sky} viewBox={K.viewBox} className={layer} aria-hidden>
         <defs dangerouslySetInnerHTML={{ __html: GLOW_DEFS }} />
         <g dangerouslySetInnerHTML={{ __html: council.ringPath + council.wires + council.pulses + council.nodes }} />
       </svg>
+      </div>
     </div>
   );
 }
