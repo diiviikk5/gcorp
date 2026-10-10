@@ -134,3 +134,24 @@ def get_row(row_id: str) -> dict:
     if not row:
         raise HTTPException(404, f"No ledger row {row_id}")
     return row
+
+
+# --------------------------------------------------------------------------- planning engines
+from .planning import optimise as _optimise, sensor_advice as _sensor_advice, track_record as _track_record  # noqa: E402
+
+
+@app.get("/api/optimise")
+def optimise(zone: str = "anandvihar", target: float = 15, budget: float = 2, months: int = 3) -> dict:
+    """Reverse the question: goal + budget -> ranked portfolios of policies."""
+    return _optimise(zone, target, budget, months)
+
+
+@app.get("/api/track-record")
+def track_record() -> dict:
+    return _track_record()
+
+
+@app.get("/api/runs/{run_id}/sensors")
+def sensors(run_id: str) -> dict:
+    r = _get(run_id)
+    return _sensor_advice(r.scenario.text, r.scenario.zone_id)
