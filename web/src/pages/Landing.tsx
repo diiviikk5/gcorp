@@ -63,34 +63,23 @@ function Hero() {
   }, []);
 
   return (
-    <section className="relative p-2.5 md:h-[100svh] md:min-h-[700px]">
-      <div className="relative h-full overflow-hidden rounded-[2px] border border-[var(--ink-hi)]/80 pb-6 md:pb-0">
-        {/* sheet corner ticks */}
+    <section className="relative p-2.5 md:h-[100svh] md:min-h-[640px]">
+      <div className="relative flex h-full flex-col overflow-hidden rounded-[2px] border border-[var(--ink-hi)]/80">
         {["left-2 top-2 border-l border-t", "right-2 top-2 border-r border-t", "left-2 bottom-2 border-l border-b", "right-2 bottom-2 border-r border-b"].map((c) => (
           <span key={c} className={cn("pointer-events-none absolute size-3 border-[var(--ink-hi)]", c)} />
         ))}
 
-        {/* the drawing */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4 }}
-          className="relative mt-48 aspect-[1.75] w-full md:absolute md:bottom-[1%] md:top-[29%] md:inset-x-[4%] md:mt-0 md:aspect-auto md:w-auto"
-        >
-          <HeroFigure policy={policy} aspect={1.75} />
-        </motion.div>
-
-        {/* title, one line across the top of the sheet */}
-        <div className="absolute inset-x-6 top-24 text-center md:top-[104px]">
+        {/* 1 · title */}
+        <div className="relative z-10 shrink-0 px-6 pt-[88px] text-center">
           <motion.h1
-            initial={{ opacity: 0, y: 14 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.2, 0.7, 0.2, 1] }}
-            className="text-[clamp(30px,4.5vw,72px)] leading-none md:whitespace-nowrap"
+            transition={{ duration: 0.7, ease: [0.2, 0.7, 0.2, 1] }}
+            className="text-[clamp(30px,4.2vw,68px)] leading-none lg:whitespace-nowrap"
           >
             Test an air policy <em>before</em> the city pays.
           </motion.h1>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.3 }} className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7, delay: 0.2 }} className="mt-5 flex flex-wrap items-center justify-center gap-3">
             <Link to="/app/new" className="btn-accent inline-flex h-10 items-center gap-2 rounded-full px-5 text-[14px] font-medium transition-colors">
               Pre-check a policy <ArrowRight className="size-4" />
             </Link>
@@ -100,28 +89,33 @@ function Hero() {
           </motion.div>
         </div>
 
-        {/* plate caption, bottom-left */}
-        <div className="absolute bottom-5 left-10 hidden font-mono text-[10.5px] leading-relaxed tracking-[0.12em] text-[var(--ink)] md:block">
-          <div className="text-[var(--ink-hi)]">FIG. 01</div>
-          <div>ANAND VIHAR · EAST DELHI</div>
-          <div>23:00 IST · AXONOMETRIC, NTS</div>
+        {/* 2 · the drawing takes whatever height is left */}
+        <div className="relative aspect-[1.3] w-full px-2 py-3 md:aspect-auto md:min-h-0 md:flex-1 md:px-4">
+          <HeroFigure policy={policy} aspect={1.75} />
         </div>
 
-        {/* title block, bottom-right */}
-        <div className="relative mx-6 mt-4 w-auto border border-[var(--ink-hi)] bg-[var(--bg)] font-mono text-[11px] md:absolute md:bottom-5 md:right-5 md:mx-0 md:mt-0 md:w-[300px]">
-          <div className="flex items-center justify-between border-b border-[var(--ink-hi)] px-3 py-2">
-            <span className="wordmark font-sans text-[14px] text-[var(--ink-hi)]">gcorp</span>
-            <span className="tracking-[0.12em] text-[var(--ink)]">SHEET 01/04</span>
+        {/* 3 · caption + title block */}
+        <div className="relative z-10 flex shrink-0 flex-wrap items-end justify-between gap-4 px-6 pb-5">
+          <div className="hidden font-mono text-[10.5px] leading-relaxed tracking-[0.12em] text-[var(--ink)] sm:block">
+            <div className="text-[var(--ink-hi)]">FIG. 01</div>
+            <div>ANAND VIHAR · EAST DELHI</div>
+            <div>23:00 IST · AXONOMETRIC, NTS</div>
           </div>
-          <div className="grid grid-cols-2">
-            <div className="border-r border-[var(--ink-hi)] px-3 py-2">
-              <div className="text-[9.5px] tracking-[0.12em] text-[var(--ink)]">AQI NOW</div>
-              <div className="mt-0.5 text-[15px] text-[var(--ink-hi)] tabular">{fmt(s.zoneBefore)}</div>
+          <div className="w-full border border-[var(--ink-hi)] bg-[var(--bg)] font-mono text-[11px] sm:w-[300px]">
+            <div className="flex items-center justify-between border-b border-[var(--ink-hi)] px-3 py-2">
+              <span className="wordmark font-sans text-[14px] text-[var(--ink-hi)]">gcorp</span>
+              <span className="tracking-[0.12em] text-[var(--ink)]">SHEET 01/04</span>
             </div>
-            <div className="px-3 py-2">
-              <div className="text-[9.5px] tracking-[0.12em] text-[var(--ink)]">NIGHT TRUCK BAN</div>
-              <div className={cn("mt-0.5 text-[15px] tabular", policy ? "text-[var(--accent)]" : "text-[var(--ink)]")}>
-                {policy ? `${fmt(s.zoneAfterLo)}–${fmt(s.zoneAfterHi)}` : "—"}
+            <div className="grid grid-cols-2">
+              <div className="border-r border-[var(--ink-hi)] px-3 py-2">
+                <div className="text-[9.5px] tracking-[0.12em] text-[var(--ink)]">AQI NOW</div>
+                <div className="mt-0.5 text-[15px] text-[var(--ink-hi)] tabular">{fmt(s.zoneBefore)}</div>
+              </div>
+              <div className="px-3 py-2">
+                <div className="text-[9.5px] tracking-[0.12em] text-[var(--ink)]">NIGHT TRUCK BAN</div>
+                <div className={cn("mt-0.5 text-[15px] tabular transition-colors", policy ? "text-[var(--accent)]" : "text-[var(--ink)]")}>
+                  {policy ? `${fmt(s.zoneAfterLo)}–${fmt(s.zoneAfterHi)}` : "—"}
+                </div>
               </div>
             </div>
           </div>
