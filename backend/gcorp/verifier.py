@@ -19,6 +19,7 @@ from . import ledger
 TOKEN = re.compile(r"\[\[([^\]]+)\]\]")
 NUMBER_WORDS = r"\b(halves|halve|half|third|quarter|double|triple|twice|dozen|hundreds?|thousands?|lakhs?|crores?|percent|one|two|three|four|five|six|seven|eight|nine|ten)\b"
 DIGIT = re.compile(r"\d")
+NAMES = re.compile(r"\b(?:PM ?(?:2\.5|10|1)|NO2|NOx|SO2|O3|CO2|BS-?(?:III|IV|VI|3|4|6)|[234]W|S5P)(?![\w.])", re.I)
 OUTCOME = re.compile(r"\b(admissions?|deaths?|lives|asthma|mortality|hospitali[sz]ations?|cases)\b", re.I)
 LEVEL_RANK = {"none": -1, "city": 0, "district": 1, "zone": 2, "point": 3}
 
@@ -34,6 +35,8 @@ class Verdict:
 def check(text: str, scope: str = "city") -> Verdict:
     refs = TOKEN.findall(text)
     bare = TOKEN.sub(" ", text)
+    # Names are not figures: pollutants (PM2.5, NO2), emission standards (BS-VI), vehicle classes (2W/3W).
+    bare = NAMES.sub(" ", bare)
 
     if DIGIT.search(bare) or re.search(NUMBER_WORDS, bare, re.I):
         found = (DIGIT.search(bare) and "a digit") or re.search(NUMBER_WORDS, bare, re.I).group(0)

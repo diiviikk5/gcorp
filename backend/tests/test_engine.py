@@ -75,3 +75,9 @@ def test_interjection_rules():
     r = execute(FLAGSHIP, "anandvihar")
     interject(r, "What if it's a windy week?")
     assert r.overrides.get("weather") == "windy" and max(r.sims) == 3
+
+
+def test_verifier_ignores_pollutant_names_but_not_figures():
+    assert verifier.check("Vehicles drive local PM2.5 here [[L-001]].").status == "accepted"
+    assert verifier.check("NO2 near BS-IV trucks matters [[L-009]].").status == "accepted"
+    assert verifier.check("PM2.5 falls by 30 here.").status == "rejected"
