@@ -269,6 +269,13 @@ export default function RunView() {
                         .finally(() => setAsking(false));
                     }}
                   >
+                    {d.complete && !asking && (
+                      <div className="mb-2 flex flex-wrap gap-1.5">
+                        {["ANPR cameras at every entry point", "What if it's a windy week?", "Calm inversion nights", "Extend to 12 months"].map((q) => (
+                          <button key={q} type="button" onClick={() => setQuestion(q)} className="rounded-full px-2.5 py-1 text-[11.5px] text-mute ring-1 ring-inset ring-line hover:text-fg hover:ring-line-2">{q}</button>
+                        ))}
+                      </div>
+                    )}
                     <div className="flex items-center gap-2 rounded-lg px-3 ring-1 ring-inset ring-line-2 focus-within:ring-black/40">
                       <input value={question} onChange={(e) => setQuestion(e.target.value)} disabled={!d.complete || asking} placeholder={d.complete ? "Challenge the council: what if cameras at every entry?" : "You can interrupt once the run finishes"} className="h-10 min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-faint" />
                       <button type="submit" disabled={!d.complete || asking || !question.trim()} className="text-[12px] font-medium text-fg disabled:text-faint">{asking ? "Asking…" : "Ask"}</button>
