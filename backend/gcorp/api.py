@@ -206,3 +206,10 @@ def ward(zone: str) -> dict:
     if not w:
         raise HTTPException(404, f"No ward geometry for {zone}; run `gcorp data ward {zone}`")
     return w
+
+
+@app.get("/api/council")
+def council() -> dict:
+    """Role contracts (council/roles/*.md) for the Council House and CLI."""
+    from .council import AGENTS
+    return AGENTS
