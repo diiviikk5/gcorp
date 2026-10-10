@@ -213,3 +213,14 @@ def council() -> dict:
     """Role contracts (council/roles/*.md) for the Council House and CLI."""
     from .council import AGENTS
     return AGENTS
+
+
+@app.get("/api/weather")
+def weather() -> dict:
+    """Hourly wind and mixing height pulled from Open-Meteo (`gcorp data pull`)."""
+    from .data import load
+    w = load("weather.json")
+    if not w:
+        raise HTTPException(404, "No weather cached; run `gcorp data pull`")
+    h = w["hourly"]
+    return {"row": w["row"], "time": h["time"], "windSpeed": h["wind_speed_10m"], "windDir": h["wind_direction_10m"], "blh": h["boundary_layer_height"]}
