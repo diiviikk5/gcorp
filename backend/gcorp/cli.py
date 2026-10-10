@@ -35,7 +35,7 @@ ACCENT = "#ff4a1c"
 MUTED = "grey50"
 STATUS = {"accepted": ("ACCEPTED", "bold"), "rejected": ("REJECTED", f"bold {ACCENT}"), "ask": ("[ASK]", "italic"), "pending": ("checking…", MUTED)}
 STAGES = ["scope", "simulate", "challenge", "verify", "decide"]
-DESKS = ["compiler", "simulator", "engineer", "epidemiologist", "economist", "skeptic", "verifier", "writer"]
+DESKS = ["compiler", "simulator", "apportionment", "engineer", "epidemiologist", "economist", "externalities", "skeptic", "verifier", "writer"]
 
 console = Console(highlight=False, soft_wrap=False)
 
@@ -84,6 +84,8 @@ class Resolver:
                 "deltaRange": f"{s['deltaLo']:.0f}–{s['deltaHi']:.0f}",
                 "pctRange": f"{s['pctLo']:.1f}–{s['pctHi']:.1f}%",
                 "spillover": f"{-s['spillover']:+.1f} AQI",
+                "ceiling": f"{s.get('ceilingPct', 0):.1f}%",
+                "regional": f"{s.get('regionalPct', 0):.0f}%",
             }.get(k, k)
         return ref
 
@@ -143,7 +145,7 @@ class Board:
 
     @staticmethod
     def run_agent(a: str) -> str:
-        return {"epidemiologist": "Epidemiologist", "writer": "Brief writer"}.get(a, a.capitalize())
+        return {"epidemiologist": "Epidemiologist", "writer": "Brief writer", "apportionment": "Source analyst", "externalities": "Externalities"}.get(a, a.capitalize())
 
     def render(self) -> Layout:
         sc = self.run["scenario"]
@@ -202,6 +204,11 @@ def _summary(run: dict) -> None:
     sims = run["sims"]
     s = sims[max(sims, key=int)]["summary"]
     rej = [c for c in run["claims"].values() if c["status"] == "rejected"]
+    conf = run.get("confidence") or {}
+    if conf:
+        console.print(Text.assemble(("confidence ", MUTED), (conf["grade"], f"bold {ACCENT}" if conf["grade"] == "Low" else "bold"), (f"  {conf['score']:.2f}" + ("  high variance" if conf.get("highVariance") else ""), MUTED)))
+        for r in conf.get("reasons", []):
+            console.print(Text(f"  · {r}", style=MUTED))
     console.print(f"[bold]GCORP_RUN_OK[/] {run['id']} · −{s['deltaLo']:.0f} to −{s['deltaHi']:.0f} AQI ({s['pctLo']:.1f}–{s['pctHi']:.1f}%) · {len(run['claims'])} claims, {len(rej)} rejected · runs/{run['id']}/")
 
 
