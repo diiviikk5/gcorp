@@ -108,30 +108,68 @@ def pull_osm() -> str:
     return f"{sum(c['schools'] for c in counts.values())} schools, {sum(c['hospitals'] for c in counts.values())} hospitals/clinics across {len(counts)} zones"
 
 
+def _openaq_get(url: str, params: dict | None, key: str) -> dict:
+    """GET with the X-API-Key header; honours 429 by waiting for the reset window."""
+    hdr = {**UA, "X-API-Key": key}
+    for attempt in range(5):
+        r = httpx.get(url, params=params, headers=hdr, timeout=30)
+        if r.status_code == 429:
+            wait = int(r.headers.get("x-ratelimit-reset", "60") or 60)
+            time.sleep(min(max(wait, 5), 70))
+            continue
+        r.raise_for_status()
+        return r.json()
+    raise RuntimeError("OpenAQ rate limit not cleared after retries")
+
+
 def pull_openaq() -> str:
+    """Latest PM2.5 at Delhi stations. Stays inside OpenAQ's 60/min limit (one request per station, paced)."""
     key = _env_key("OPENAQ_API_KEY")
     if not key:
         return "skipped: set OPENAQ_API_KEY in backend/.env (free key at explore.openaq.org)"
-    lat, lon = 28.62, 77.21
-    hdr = {**UA, "X-API-Key": key}
-    locs = httpx.get("https://api.openaq.org/v3/locations", params={"coordinates": f"{lat},{lon}", "radius": 25000, "limit": 100, "parameters_id": 2}, headers=hdr, timeout=30).json()["results"]
+    locs = _openaq_get("https://api.openaq.org/v3/locations",
+                       {"coordinates": "28.61,77.21", "radius": 25000, "limit": 100, "parameters_id": 2}, key)["results"]
     out = []
     for loc in locs:
-        latest = httpx.get(f"https://api.openaq.org/v3/locations/{loc['id']}/latest", headers=hdr, timeout=30).json().get("results", [])
-        pm = [r for r in latest if r.get("sensorsId") in {s["id"] for s in loc.get("sensors", []) if s.get("parameter", {}).get("name") == "pm25"}]
-        if pm:
-            out.append({"id": loc["id"], "name": loc["name"], "lat": loc["coordinates"]["latitude"], "lon": loc["coordinates"]["longitude"],
-                        "pm25": pm[0]["value"], "at": pm[0]["datetime"]["utc"]})
-        time.sleep(0.2)
+        pm_sensor = next((s for s in loc.get("sensors", []) if s.get("parameter", {}).get("name") == "pm25"), None)
+        if not pm_sensor:
+            continue
+        latest = _openaq_get(f"https://api.openaq.org/v3/sensors/{pm_sensor['id']}/measurements", {"limit": 1}, key)
+        ms = latest.get("results", [])
+        if ms:
+            at = ms[0]["period"]["datetimeTo"]["utc"]
+            val = ms[0]["value"]
+            age_h = (time.time() - time.mktime(time.strptime(at[:19], "%Y-%m-%dT%H:%M:%S")) + time.timezone) / 3600
+            # Keep every plausible reading and record its age. Stale data is labelled, never hidden.
+            if 0 < val < 999:
+                out.append({"id": loc["id"], "name": loc["name"], "sensor": pm_sensor["id"],
+                            "lat": loc["coordinates"]["latitude"], "lon": loc["coordinates"]["longitude"],
+                            "pm25": val, "at": at, "ageHours": round(age_h, 1), "fresh": age_h <= 48})
+        time.sleep(1.1)  # ~55 requests/minute, under the 60/min ceiling
     _save("openaq_latest.json", {"retrievedAt": _now(), "stations": out})
-    return f"{len(out)} Delhi stations with a PM2.5 reading"
+    fresh = sum(1 for x in out if x["fresh"])
+    return f"{len(out)} Delhi stations with a PM2.5 reading, {fresh} fresh (≤48 h)"
+
+
+def pull_firms() -> str:
+    """Active-fire detections upwind of Delhi (Punjab + Haryana), last 7 days, VIIRS (NASA FIRMS)."""
+    key = _env_key("FIRMS_MAP_KEY")
+    if not key:
+        return "skipped: set FIRMS_MAP_KEY in backend/.env (free at firms.modaps.eosdis.nasa.gov/api/map_key)"
+    bbox = "73.8,29.5,77.6,32.6"  # west,south,east,north: Punjab and northern Haryana
+    url = f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{key}/VIIRS_SNPP_NRT/{bbox}/7"
+    r = httpx.get(url, timeout=60, headers=UA)
+    r.raise_for_status()
+    rows = [l for l in r.text.strip().splitlines()[1:] if l]
+    _save("firms.json", {"retrievedAt": _now(), "bbox": bbox, "days": 7, "fires": len(rows)})
+    return f"{len(rows)} fire detections upwind in the last 7 days"
 
 
 def pull(online: bool = True) -> dict[str, str]:
     report = {}
-    for name, fn in (("weather", pull_weather), ("osm", pull_osm), ("openaq", pull_openaq)):
+    for name, fn in (("weather", pull_weather), ("osm", pull_osm), ("openaq", pull_openaq), ("firms", pull_firms)):
         if not online:
-            report[name] = "cached" if load({"weather": "weather.json", "osm": "osm_counts.json", "openaq": "openaq_latest.json"}[name]) else "no cache"
+            report[name] = "cached" if load({"weather": "weather.json", "osm": "osm_counts.json", "openaq": "openaq_latest.json", "firms": "firms.json"}[name]) else "no cache"
             continue
         try:
             report[name] = fn()
@@ -155,6 +193,11 @@ def verified_rows() -> list[dict]:
             rows.append({"id": f"L-013-{zid}", "label": f"Hospitals and clinics within 2 km · {zid}", "value": str(c["hospitals"]), "unit": "count",
                          "source": "OpenStreetMap via Overpass (amenity=hospital|clinic)", "url": "https://overpass-api.de", "retrievedAt": osm["retrievedAt"],
                          "scope": f"{zid}, 2 km radius", "status": "verified", "scopeLevel": "zone"})
+    fr = load("firms.json")
+    if fr:
+        rows.append({"id": "L-034", "label": "Active fires upwind (Punjab, Haryana), last 7 days", "value": str(fr["fires"]), "unit": "detections",
+                     "source": "NASA FIRMS, VIIRS S-NPP near real time", "url": "https://firms.modaps.eosdis.nasa.gov", "retrievedAt": fr["retrievedAt"],
+                     "scope": "Upwind region, 7 days", "status": "verified", "scopeLevel": "district"})
     aq = load("openaq_latest.json")
     if aq:
         for s in aq["stations"]:
