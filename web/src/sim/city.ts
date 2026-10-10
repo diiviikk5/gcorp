@@ -85,14 +85,14 @@ export function buildCity(seed = 11): City {
       else if (ch === "industrial" && rnd() < 0.72) kind = "industrial";
       else if (ch === "green" && rnd() < 0.45) kind = "park";
       else if (ch === "suburban" && rnd() < 0.16) kind = "park";
-      else if (rnd() < 0.07) kind = "open";
+      else if (rnd() < (ch === "transit" ? 0.1 : 0.2)) kind = "open";
       else if (rnd() < 0.05) kind = "park";
 
       let height = 0;
       if (kind === "building") {
         const r = rnd();
         height =
-          ch === "transit" ? 0.9 + r * 2.6 :
+          ch === "transit" ? 0.7 + r * 1.9 :
           ch === "dense" ? 0.7 + r * 1.5 :
           ch === "mixed" ? 0.6 + r * 1.4 :
           ch === "suburban" ? 0.45 + r * 1.1 :
