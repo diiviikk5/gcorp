@@ -347,7 +347,76 @@ def cmd_data(args, eng):
     _out(args, report, lambda r: [console.print(f"[bold]{k:<10}[/] {v}") for k, v in r.items()])
 
 
+WORDMARK = [
+    " ██████╗  ██████╗ ██████╗ ██████╗ ██████╗ ",
+    "██╔════╝ ██╔════╝██╔═══██╗██╔══██╗██╔══██╗",
+    "██║  ███╗██║     ██║   ██║██████╔╝██████╔╝",
+    "██║   ██║██║     ██║   ██║██╔══██╗██╔═══╝ ",
+    "╚██████╔╝╚██████╗╚██████╔╝██║  ██║██║     ",
+    " ╚═════╝  ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝     ",
+]
+SKYLINE = "▁▂▃▂▅▃▁▂▆▇▅▃▁▂▅▃▁▁▃▅▆▃▂▁▂▄█▆▅▂▁▃▂▅▃▁▂▃▅"
+SMOG = "· ˙ · ∙ ˙ · ∙ · ˙ ∙ · ˙ · ∙ ˙ · ∙ · ˙ ∙"
+
+
+def _lerp(c1: str, c2: str, t: float) -> str:
+    a = [int(c1[i:i + 2], 16) for i in (1, 3, 5)]
+    b = [int(c2[i:i + 2], 16) for i in (1, 3, 5)]
+    return "#" + "".join(f"{round(x + (y - x) * t):02x}" for x, y in zip(a, b))
+
+
+def banner() -> Group:
+    lines = []
+    for i, row in enumerate(WORDMARK):
+        lines.append(Text(row, style=f"bold {_lerp('#f1ebe4', ACCENT, i / (len(WORDMARK) - 1))}"))
+    sky = Text()
+    for i, ch in enumerate(SKYLINE):
+        sky.append(ch, style=ACCENT if i == 26 else "grey58")  # the one live sensor
+    lines += [Text(SMOG, style="grey35"), sky]
+    return Group(*lines)
+
+
+def home() -> None:
+    """`gcorp` with no command: the front door."""
+    try:
+        url, _src = client.resolve(start=False)
+        h = client.httpx.get(url + "/api/health", timeout=2).json()
+        status = Text.assemble(("● ", ACCENT), ("engine live  ", "bold"), (f"{url} · {h['runs']} runs · {h['ledgerRows']} ledger rows", MUTED))
+    except Exception:  # noqa: BLE001
+        status = Text.assemble(("○ ", MUTED), ("engine asleep  ", "bold"), ("starts on your first command", MUTED))
+
+    tagline = Text.assemble(("Test an air policy ", "bold"), ("before", f"bold italic {ACCENT}"), (" the city pays.", "bold"))
+    sub = Text("a verified council of agents · a deterministic simulator · a provenance ledger", style=MUTED)
+
+    cmds = Table(box=box.SIMPLE_HEAD, show_edge=False, pad_edge=False, expand=True, header_style=MUTED)
+    cmds.add_column("command", style="bold", no_wrap=True)
+    cmds.add_column("what it does", style=MUTED)
+    for c, d in [
+        ('run "<policy>" --zone <z> --watch', "convene the council, watch it live"),
+        ('ask <run> "what if cameras?"', "challenge the council mid-run"),
+        ("brief <run>", "findings, open questions, exclusions"),
+        ("optimise --target 15 --budget 2", "goal + budget → ranked policies"),
+        ("track-record", "past Delhi policies vs what happened"),
+        ("sensors <run>", "where one more sensor helps most"),
+        ("ledger [row]  ·  council", "sources  ·  role contracts"),
+        ("data pull  ·  data ward <zone>", "real weather, OSM, buildings"),
+        ("serve · status · stop · config", "engine lifecycle and endpoint"),
+    ]:
+        cmds.add_row(Text.assemble(("gcorp ", ACCENT), (c, "bold")), d)
+
+    console.print()
+    console.print(Panel(Group(banner(), Text(""), tagline, sub, Text(""), status, Text(""), cmds, Text(""),
+                              Text("Agents never produce numbers. Every figure is a ledger row or a simulator range.", style=f"italic {MUTED}")),
+                        box=box.HEAVY_HEAD, border_style="grey35", padding=(1, 3), width=min(console.width, 92),
+                        title=Text(" delhi · track 01 air ", style=MUTED), title_align="right"))
+    console.print()
+
+
 def main(argv: list[str] | None = None) -> int:
+    argv = sys.argv[1:] if argv is None else argv
+    if not argv:
+        home()
+        return 0
     p = argparse.ArgumentParser(prog="gcorp", description="Pre-check city air policy from the terminal.")
     p.add_argument("--json", action="store_true", help="machine-readable output")
     p.add_argument("--endpoint", help="engine URL (default: env, config, or local daemon)")
