@@ -9,3 +9,7 @@ runs/
 __pycache__/
 .venv/
 *.tsbuildinfo
+backend/.venv/
+backend/runs/
+backend/.env
+.pytest_cache/
