@@ -13,3 +13,4 @@ backend/.venv/
 backend/runs/
 backend/.env
 .pytest_cache/
+backend/gcorp/data/cache/
