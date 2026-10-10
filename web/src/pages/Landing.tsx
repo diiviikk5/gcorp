@@ -30,7 +30,7 @@ function Nav() {
     <header className="fixed inset-x-0 top-0 z-50">
       <div className="mx-auto mt-3 flex h-12 max-w-[1240px] items-center justify-between rounded-full border border-[var(--edge)] bg-[rgb(11_10_9/0.7)] px-3 pl-4 backdrop-blur-xl">
         <Link to="/" className="flex items-center gap-2 text-[14px] font-medium tracking-tight">
-          <LogoMark className="size-5" /> Air Council
+          <LogoMark className="size-5" /> Gcorp
         </Link>
         <nav className="hidden items-center gap-7 text-[13px] text-[var(--ink)] md:flex">
           <a href="#how" className="hover:text-[var(--ink-hi)]">How it works</a>
@@ -282,8 +282,8 @@ function Replay() {
     const sc = compile({ text: "Run odd-even for private cars across Delhi for 15 days in January 2016" });
     return simulate(withOverrides(sc, { leakagePct: 25, compliancePct: 55 }), 2).summary;
   }, []);
-  const obs = [2, 6];
-  const max = 12;
+  const obs = [1, 3];
+  const max = 6;
   return (
     <section id="replay" className="border-t border-[var(--edge)]">
       <div className="mx-auto grid max-w-[1240px] items-center gap-14 px-6 py-28 lg:grid-cols-2">
@@ -296,7 +296,7 @@ function Replay() {
         </motion.div>
         <motion.div {...rise} className="rounded-2xl border border-[var(--edge)] bg-[var(--panel)] p-6">
           {[
-            { k: "Air Council estimate", lo: predicted.pctLo, hi: predicted.pctHi, accent: true },
+            { k: "Gcorp estimate", lo: predicted.pctLo, hi: predicted.pctHi, accent: true },
             { k: "Observed (evaluations)", lo: obs[0], hi: obs[1], accent: false },
           ].map((r) => (
             <div key={r.k} className="py-4">
@@ -372,7 +372,7 @@ function Footer() {
   return (
     <footer className="border-t border-[var(--edge)]">
       <div className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-between gap-4 px-6 py-8 text-[12px] text-[var(--ink)]">
-        <span className="flex items-center gap-2"><LogoMark className="size-4" /> Air Council · prototype on demo data</span>
+        <span className="flex items-center gap-2"><LogoMark className="size-4" /> Gcorp · prototype on demo data</span>
         <a href="https://iso-glow.vercel.app" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[var(--line)] hover:text-[var(--ink)]">
           Made with ISO-GLOW <ArrowUpRight className="size-3" />
         </a>

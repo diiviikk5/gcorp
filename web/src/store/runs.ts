@@ -21,7 +21,7 @@ function seedRuns(): RunRecord[] {
   return [
     mk("Ban diesel trucks from entering Anand Vihar at night for six months starting November", "anandvihar", "2026-10-09T16:40:00Z"),
     mk("Enforce construction dust rules across Okhla for 3 months", "okhla", "2026-10-09T11:05:00Z"),
-    mk("Run odd-even for private cars across Delhi for 15 days in January 2016", undefined, "2026-10-08T18:22:00Z", "replay", { label: "Observed during Jan 1–15, 2016", deltaPct: 4, ledgerRef: "L-018" }),
+    mk("Run odd-even for private cars across Delhi for 15 days in January 2016", undefined, "2026-10-08T18:22:00Z", "replay", { label: "Observed during Jan 1–15, 2016", deltaPct: 2, ledgerRef: "L-018" }),
     mk("Ban diesel autos in ITO for six months", "ito", "2026-10-08T09:12:00Z"),
   ];
 }
@@ -38,7 +38,7 @@ export const useRuns = create<RunsState>()(
       },
       removeRun: (id) => set({ runs: get().runs.filter((r) => r.id !== id) }),
     }),
-    { name: "air-council-runs", version: 3 },
+    { name: "gcorp-runs", version: 3 },
   ),
 );
 
