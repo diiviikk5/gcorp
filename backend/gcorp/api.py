@@ -115,10 +115,8 @@ def create_run(body: RunIn) -> dict:
         from .aws.bridge import run_on_agentcore
         r = run_on_agentcore(body.text, body.zoneId, body.overrides, body.backend)
     else:
-        backend = None
-        if body.backend == "bedrock":
-            from .council.bedrock import BedrockBackend
-            backend = BedrockBackend()
+        from .council.bedrock import backend_for
+        backend = backend_for(body.backend)
         r = execute(body.text, body.zoneId, body.overrides, kind=body.kind, backend=backend)
     RUNS[r.id] = r
     return r.to_json()

@@ -220,7 +220,7 @@ function CloudChecks({ cloud, claims }: { cloud: RunCloud; claims: Claim[] }) {
   if (gates.length) lines.push(`${gates.length} parameter change${gates.length > 1 ? "s" : ""} decided by AgentCore Policy (Cedar): ${gates.filter((c) => c.gate!.decision === "permit").length} permitted.`);
   if (graded.length) lines.push(`Bedrock Guardrails grounding: ${graded.length - weak.length} of ${graded.length} accepted claims say what their sources say` + (weak.length ? `; ${weak.length} marked weakly grounded below.` : "."));
   const back = cloud.host?.backends ?? cloud.backends;
-  if (back && Object.values(back).some((v) => v === "bedrock")) lines.push("Drafted by a Bedrock model; every claim still passed the verifier.");
+  if (back && Object.values(back).some((v) => v.startsWith("bedrock"))) lines.push("Drafted by a Bedrock model; every claim still passed the verifier.");
   if (!lines.length) return null;
   return (
     <Section title="Checked in AWS">

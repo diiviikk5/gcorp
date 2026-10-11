@@ -1,4 +1,4 @@
-"""A Bedrock model (Amazon Nova 2 Lite by default; any Converse model works) as a council backend.
+"""Bedrock as a council backend (Amazon Nova 2 Lite by default; any Converse model works).
 
 Same `drafts(agent, ctx)` contract as RuleBackend. The model gets the agent's role
 contract, the scenario, the simulator's summary and the ledger index (ids + labels,
@@ -38,20 +38,20 @@ def _index() -> str:
     return "\n".join(f"{r['id']} [{r.get('scopeLevel', 'city')}] {r['label']}" for r in ledger.all_rows())
 
 
-class BedrockBackend:
+class ModelBackend:
+    """Shared prompt/parse logic; subclasses only implement `_complete(system, user) -> str`."""
+
+    name = "model"
+
     def __init__(self, model: str | None = None, client=None):
-        self.model = model or MODEL
+        self.model = model
         self._client = client
         self.fallback = RuleBackend()
-        self.used: dict[str, str] = {}  # agent -> "bedrock" | "rules (reason)"
+        self.used: dict[str, str] = {}  # agent -> "<provider>:<model>" | "rules (reason)"
         self._ix = None
 
-    @property
-    def client(self):
-        if self._client is None:
-            from ..aws import session
-            self._client = session().client("bedrock-runtime")
-        return self._client
+    def _complete(self, system: str, user: str) -> str:
+        raise NotImplementedError
 
     def _prompt(self, agent: str, c: Context) -> str:
         a = AGENTS[agent]
@@ -69,11 +69,7 @@ class BedrockBackend:
         if agent not in AGENTS:
             return []
         try:
-            r = self.client.converse(
-                modelId=self.model, system=[{"text": RULES}],
-                messages=[{"role": "user", "content": [{"text": self._prompt(agent, ctx)}]}],
-                inferenceConfig={"maxTokens": 600, "temperature": 0.2})
-            raw = r["output"]["message"]["content"][0]["text"]
+            raw = self._complete(RULES, self._prompt(agent, ctx))
             data = json.loads(raw[raw.find("{"): raw.rfind("}") + 1])
             out = []
             for d in data.get("drafts", [])[:2]:
@@ -86,8 +82,35 @@ class BedrockBackend:
                 changes = dict(d.get("changes") or {})
                 out.append(Draft(agent, text, list(dict.fromkeys(list(d.get("lookups") or []) + cited)),
                                  scope="zone" if d.get("scope") == "zone" else "city", changes=changes))
-            self.used[agent] = "bedrock"
+            self.used[agent] = f"{self.name}:{self.model}"
             return out or self.fallback.drafts(agent, ctx)
         except Exception as e:
             self.used[agent] = f"rules ({type(e).__name__})"
             return self.fallback.drafts(agent, ctx)
+
+
+class BedrockBackend(ModelBackend):
+    """Any Bedrock Converse model; Amazon Nova 2 Lite by default."""
+
+    name = "bedrock"
+
+    def __init__(self, model: str | None = None, client=None):
+        super().__init__(model or MODEL, client)
+
+    @property
+    def client(self):
+        if self._client is None:
+            from ..aws import session
+            self._client = session().client("bedrock-runtime")
+        return self._client
+
+    def _complete(self, system: str, user: str) -> str:
+        r = self.client.converse(modelId=self.model, system=[{"text": system}],
+                                 messages=[{"role": "user", "content": [{"text": user}]}],
+                                 inferenceConfig={"maxTokens": 600, "temperature": 0.2})
+        return r["output"]["message"]["content"][0]["text"]
+
+
+def backend_for(name: str | None):
+    """'rules' (default) | 'bedrock'."""
+    return BedrockBackend() if name == "bedrock" else None

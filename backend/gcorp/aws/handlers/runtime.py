@@ -23,10 +23,8 @@ from gcorp.orchestrator import confidence, execute  # noqa: E402
 
 
 def assess(payload: dict) -> dict:
-    backend = None
-    if payload.get("backend", "bedrock") == "bedrock":
-        from gcorp.council.bedrock import BedrockBackend
-        backend = BedrockBackend()
+    from gcorp.council.bedrock import backend_for
+    backend = backend_for(payload.get("backend", "bedrock"))
     t0 = time.time()
     run = execute(payload["policy"], payload.get("zone"), payload.get("overrides"), backend=backend)
     out = run.to_json(grids=False)
