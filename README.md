@@ -133,18 +133,6 @@ In the web app: **AWS** page (services, Cedar test, live air, watch loop, KB sea
 
 Cost on the Free plan: no NAT, no OpenSearch, no always-on compute; a $100 budget with alerts. Bedrock model quotas start at zero on new accounts; everything else works without them.
 
-## Demo (90 seconds)
-
-1. Landing: the city draws itself in; the truck ban toggles and the dots thin.
-2. Console → New assessment → "Ban diesel trucks from entering Anand Vihar at night…".
-3. Chamber: watch the Engineer open drawer L-011, the Verifier **reject** a zone claim built on city-wide data.
-4. Challenge: "ANPR cameras at every entry point" → re-simulated live.
-5. Council House: convene the same policy and watch the agents walk it through the building.
-6. Street Lab: scrub to a calm night and watch the truck ban clear the NH-24 corridor downwind.
-7. Plan (goal → portfolio) and Track record (2/4 → 4/4, demo outcomes until replaced).
-8. AWS: *Test the contracts* (AgentCore Policy refuses the economist), live Delhi air, the brief's *Checked in AWS* and **Listen**.
-9. Close: "What would you have done?"
-
 ## Credits
 
 Landing figures use the projection kernel from [iso-glow](https://iso-glow.vercel.app) (MIT), building on iso-figure by Tolga Cohce. CLI architecture inspired by [gstack](https://github.com/garrytan/gstack).
