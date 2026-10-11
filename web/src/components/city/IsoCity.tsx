@@ -625,7 +625,7 @@ export function IsoCity(props: IsoCityProps) {
       </Canvas>
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {smoke != null && smoke > 5 && mode !== "mini" && (
-          <div className="absolute bottom-4 left-4 max-w-[230px] rounded-lg border border-black/10 bg-bg/85 px-3 py-2 text-[11.5px] leading-snug backdrop-blur-md">
+          <div className="absolute bottom-[104px] left-4 max-w-[230px] rounded-lg border border-black/10 bg-bg/85 px-3 py-2 text-[11.5px] leading-snug backdrop-blur-md">
             <div className="flex items-center gap-1.5 font-medium"><span className="inline-block size-2 rounded-full bg-[#a89880]" />Stubble smoke · {Math.round(smoke)}% of PM2.5</div>
             <div className="mt-0.5 text-mute">Crop fires in Punjab and Haryana, carried in on north-westerly winds. No Delhi policy can touch this share.</div>
           </div>
