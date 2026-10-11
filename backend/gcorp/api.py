@@ -20,10 +20,12 @@ from . import ledger
 from .city import ZONES, get_city, zone_baseline, zone_coverage
 from .compiler import compile_policy
 from .orchestrator import Run, execute, interject
+from .rng import fnv1a
 from .simulator import school_cells
 
 app = FastAPI(title="Gcorp engine", version="0.2.0")
-app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"], allow_methods=["*"], allow_headers=["*"])
+ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"] + [o for o in os.environ.get("GCORP_CORS_ORIGINS", "").split(",") if o]
+app.add_middleware(CORSMiddleware, allow_origins=ORIGINS, allow_methods=["*"], allow_headers=["*"])
 
 RUNS: dict[str, Run] = {}
 
@@ -61,7 +63,7 @@ async def _idle() -> None:
 @app.on_event("startup")
 def _seed() -> None:
     for text, zone, kind, created, observed in SEEDS:
-        r = execute(text, zone, kind=kind, created_at=created, cloud=False)
+        r = execute(text, zone, kind=kind, created_at=created, cloud=False, run_id=f"r-{fnv1a(text)[:6]}")
         r.observed = observed
         RUNS[r.id] = r
 
@@ -79,8 +81,19 @@ class InterjectIn(BaseModel):
     text: str
 
 
+def _shared() -> bool:
+    """On Lambda several engine instances serve the same app; runs are shared through S3 + DynamoDB."""
+    from .aws import IN_CLOUD, enabled
+    return IN_CLOUD and enabled()
+
+
 def _get(run_id: str) -> Run:
     r = RUNS.get(run_id)
+    if not r and _shared():
+        from .aws.bridge import load_archived
+        r = load_archived(run_id)
+        if r:
+            RUNS[r.id] = r
     if not r:
         raise HTTPException(404, f"No run {run_id}")
     return r
@@ -124,6 +137,13 @@ def create_run(body: RunIn) -> dict:
 
 @app.get("/api/runs")
 def list_runs() -> list[dict]:
+    if _shared():
+        from .aws.bridge import archived_ids, load_archived
+        for rid in archived_ids():
+            if rid not in RUNS:
+                r = load_archived(rid)
+                if r:
+                    RUNS[rid] = r
     rs = sorted(RUNS.values(), key=lambda r: r.created_at, reverse=True)
     return [r.to_json(grids=False) for r in rs]
 

@@ -131,6 +131,7 @@ export default function StreetLab() {
   const [trucks, setTrucks] = useState<LabPolicy["trucks"]>("night");
   const [oddEven, setOddEven] = useState(false);
   const [compliance, setCompliance] = useState(0.7);
+  const [stubble, setStubble] = useState(false);
   const [probe, setProbe] = useState<number | null>(null);
   const [, setTick] = useState(0);
   const policy = useMemo<LabPolicy>(() => ({ trucks, oddEven, compliance }), [trucks, oddEven, compliance]);
@@ -155,6 +156,10 @@ export default function StreetLab() {
     if (import.meta.env.DEV) (window as unknown as { __lab: Dispersion }).__lab = s;
     return s;
   }, [ward, weather]);
+
+  // Stubble-burning day: regional smoke (Punjab/Haryana) lifts the whole floor. Peak-day share
+  // rises to about 40% of PM2.5 [[L-007]]; street rules act only on the local part.
+  useEffect(() => { if (sim) { sim.smoke = stubble ? sim.background * 0.9 : 0; setTick((t) => t + 1); } }, [sim, stubble]);
 
   // time-lapse through the real week of weather
   useEffect(() => {
@@ -216,6 +221,11 @@ export default function StreetLab() {
               <Segmented className="mt-2" size="md" value={trucks} onChange={setTrucks} options={[{ value: "none", label: "None" }, { value: "night", label: "Night ban" }, { value: "all", label: "All-day ban" }]} />
               {trucks === "night" && !(hour >= 23 || hour < 7) && <div className="mt-1.5 text-[11.5px] text-mute">Outside 23:00–07:00 the night ban does nothing. Move the clock to see it act.</div>}
             </div>
+            <label className="flex items-center justify-between">
+              <span className="text-mute">Stubble-burning day <RefChip refId="L-007" /></span>
+              <input type="checkbox" checked={stubble} onChange={(e) => setStubble(e.target.checked)} className="size-4 accent-black" />
+            </label>
+            {stubble && <div className="-mt-2 text-[11.5px] text-mute">Smoke from crop fires in Punjab and Haryana lifts the whole street. The truck ban removes the same micrograms, but they are a smaller share of a dirtier sky.</div>}
             <label className="flex items-center justify-between">
               <span className="text-mute">Odd-even for private cars</span>
               <input type="checkbox" checked={oddEven} onChange={(e) => setOddEven(e.target.checked)} className="size-4 accent-black" />

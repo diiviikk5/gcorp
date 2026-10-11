@@ -7,6 +7,7 @@ import { getCity } from "@/sim/city";
 import { mulberry32 } from "@/sim/rng";
 import { aqiBand } from "@/lib/aqi";
 import { fieldTexture, makeSmogMaterial, writeField } from "./smogShader";
+import { StubbleSmoke } from "./StubbleSmoke";
 
 const { city } = getCity();
 const N = city.size;
@@ -44,6 +45,8 @@ export interface IsoCityProps {
   paused?: boolean;
   className?: string;
   onZoneClick?: (zoneId: string) => void;
+  /** Regional (stubble) smoke share of PM2.5, %. Draws the plume drifting in from the north-west. */
+  smoke?: number;
 }
 
 // Shared animation state lives in a ref so children can read it per frame
@@ -533,7 +536,7 @@ function Rig({ mode, focus, follow, anim, showAfter }: { mode: IsoCityProps["mod
 }
 
 export function IsoCity(props: IsoCityProps) {
-  const { mode, field, showAfter, layer = "haze", zoneId, focus, agents, activeAgent, verdict, policyClass, showStations = true, showLabels = mode === "app", showTraffic = true, showHatch = true, follow = true, paused, className, onZoneClick } = props;
+  const { mode, field, showAfter, layer = "haze", zoneId, focus, agents, activeAgent, verdict, policyClass, showStations = true, showLabels = mode === "app", showTraffic = true, showHatch = true, follow = true, paused, className, onZoneClick, smoke } = props;
   const anim = useRef<Anim>({ mix: showAfter ? 1 : 0 });
   const host = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(true);
@@ -614,12 +617,19 @@ export function IsoCity(props: IsoCityProps) {
           {zoneId && zoneId !== "all" && <ZoneOutline zoneId={zoneId} />}
           {showStations && <Stations />}
           {layer !== "tiles" && <Smog field={field} anim={anim} showHatch={showHatch} layers={layer === "delta" ? 2 : mode === "mini" ? 3 : 5} />}
+          {smoke != null && smoke > 5 && <StubbleSmoke size={N} share={smoke} />}
           {agents && agents.length > 0 && <AgentPins agents={agents} active={activeAgent} focus={focus} anchors={anchors} />}
           {verdict && <VerdictPulse key={verdict.key} verdict={verdict} />}
         </group>
         <LabelProjector anchors={anchors} els={els} />
       </Canvas>
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        {smoke != null && smoke > 5 && mode !== "mini" && (
+          <div className="absolute bottom-4 left-4 max-w-[230px] rounded-lg border border-black/10 bg-bg/85 px-3 py-2 text-[11.5px] leading-snug backdrop-blur-md">
+            <div className="flex items-center gap-1.5 font-medium"><span className="inline-block size-2 rounded-full bg-[#a89880]" />Stubble smoke · {Math.round(smoke)}% of PM2.5</div>
+            <div className="mt-0.5 text-mute">Crop fires in Punjab and Haryana, carried in on north-westerly winds. No Delhi policy can touch this share.</div>
+          </div>
+        )}
         {showLabels &&
           city.zones.map((z) => {
             const active = zoneId === z.id;

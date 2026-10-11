@@ -44,6 +44,7 @@ class Run:
     overrides: dict[str, float | str] = field(default_factory=dict)
     observed: dict | None = None
     cloud: dict | None = None  # which AWS checks ran (gateway, guardrail, archive, backends)
+    input_overrides: dict | None = None  # what the planner set in the wizard
     t: int = 0
     msg_n: int = 0
 
@@ -61,7 +62,7 @@ class Run:
             "scenario": self.scenario.to_json(), "events": self.events, "claims": self.claims,
             "sims": {str(k): v if grids else {kk: vv for kk, vv in v.items() if kk not in ("before", "afterLo", "afterHi", "uncertainty")} for k, v in self.sims.items()},
             "finalOverrides": self.overrides, "duration": self.duration, "observed": self.observed,
-            "confidence": confidence(self) if self.sims else None, "cloud": self.cloud,
+            "confidence": confidence(self) if self.sims else None, "cloud": self.cloud, "inputOverrides": self.input_overrides,
         }
 
 
@@ -264,6 +265,7 @@ def execute(text: str, zone_id: str | None = None, overrides: dict | None = None
     rid = run_id or f"r-{fnv1a(sc.fingerprint + str(time.time()))[:6]}"
     sc.id = rid
     run = Run(rid, kind, created_at or time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), sc)
+    run.input_overrides = overrides or None
     rec = Recorder(run)
     blocked = any(w.level == "block" for w in sc.warnings)
 
@@ -314,7 +316,9 @@ def execute(text: str, zone_id: str | None = None, overrides: dict | None = None
     rec.emit(300, type="complete")
     _write(run, "events.json", run.events)
     from .aws import IN_CLOUD
-    if aws is not None and not IN_CLOUD:  # the runtime archives its own runs
+    if aws is not None and os.environ.get("GCORP_ARCHIVE") == "sync":  # Lambda: no background threads after return
+        _archive(aws, run)
+    elif aws is not None and not IN_CLOUD:  # the runtime archives its own runs
         import threading
         threading.Thread(target=_archive, args=(aws, run), daemon=True).start()
     return run

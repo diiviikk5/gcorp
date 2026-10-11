@@ -41,6 +41,7 @@ export class Dispersion {
   private tmp: Float32Array;
   scale = 1; // calibration: local units -> µg/m³
   background = 110; // µg/m³ regional + urban background
+  smoke = 0; // µg/m³ extra regional smoke on a stubble-burning day (no street policy touches it)
   stationCell = -1;
 
   constructor(ward: Ward, N = 144) {
@@ -226,7 +227,7 @@ export class Dispersion {
   }
 
   pm(field: Float32Array, i: number) {
-    return this.background + field[i] * this.scale;
+    return this.background + this.smoke + field[i] * this.scale;
   }
 
   stats() {
@@ -238,7 +239,7 @@ export class Dispersion {
       sb += b; sp += p; n++;
       if (this.road[i] && b - p > best.gain && this.roadName[i]) best = { i, gain: b - p };
     }
-    const st = this.stationCell >= 0 ? { base: this.background + this.near(this.base) * this.scale, pol: this.background + this.near(this.pol) * this.scale } : null;
+    const st = this.stationCell >= 0 ? { base: this.background + this.smoke + this.near(this.base) * this.scale, pol: this.background + this.smoke + this.near(this.pol) * this.scale } : null;
     return { meanBase: sb / n, meanPol: sp / n, station: st, bestStreet: best.i >= 0 ? { name: this.roadName[best.i]!, gain: best.gain } : null };
   }
 }

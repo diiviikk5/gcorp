@@ -148,6 +148,7 @@ export default function RunView() {
               activeAgent={d.activeAgent}
               verdict={verdictFocus}
               policyClass={scenario.vehicleClass}
+              smoke={Number(sim.summary.regionalPct ?? 0)}
             />
           )}
 

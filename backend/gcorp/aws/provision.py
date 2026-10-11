@@ -48,15 +48,15 @@ def _retry(fn, *a, tries: int = 12, wait: float = 5, on=("InvalidParameterValue"
 
 # --------------------------------------------------------------------------- packaging
 
-def _zip_core(extra: dict[str, bytes] | None = None, deps: Path | None = None) -> bytes:
+def _zip_core(extra: dict[str, bytes] | None = None, deps: Path | None = None, wards: bool = False, keep: set[str] | None = None) -> bytes:
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
         for f in PKG.rglob("*"):
             rel = f.relative_to(PKG.parent)
-            if f.is_dir() or any(p in SKIP for p in rel.parts) or f.suffix == ".pyc":
+            if f.is_dir() or any(p in (SKIP - (keep or set())) for p in rel.parts) or f.suffix == ".pyc":
                 continue
-            if "cache" in rel.parts and f.name.startswith("ward_"):
-                continue  # street geometry is web-only
+            if "cache" in rel.parts and f.name.startswith("ward_") and not wards:
+                continue  # street geometry only ships with the HTTP API
             z.write(f, rel.as_posix())
         if deps and deps.exists():
             for f in deps.rglob("*"):
@@ -67,14 +67,19 @@ def _zip_core(extra: dict[str, bytes] | None = None, deps: Path | None = None) -
     return buf.getvalue()
 
 
-def _runtime_deps() -> Path:
-    """boto3 for the AgentCore Runtime (linux/arm64; pure-Python wheels)."""
-    d = BUILD / "runtime-deps"
-    if not (d / "boto3").exists():
+def _deps(name: str, packages: list[str], marker: str) -> Path:
+    """Linux/arm64 wheels for Python 3.13, cached in backend/.build/<name>."""
+    d = BUILD / name
+    if not (d / marker).exists():
         d.mkdir(parents=True, exist_ok=True)
         subprocess.run([sys.executable, "-m", "pip", "install", "-q", "--target", str(d), "--platform", "manylinux2014_aarch64",
-                        "--python-version", "3.13", "--only-binary=:all:", "--upgrade", "boto3"], check=True)
+                        "--python-version", "3.13", "--only-binary=:all:", "--upgrade", *packages], check=True)
     return d
+
+
+def _runtime_deps() -> Path:
+    """boto3 for the AgentCore Runtime."""
+    return _deps("runtime-deps", ["boto3"], "boto3")
 
 
 # --------------------------------------------------------------------------- IAM
@@ -202,6 +207,13 @@ def step_iam(st: dict) -> None:
         _stmt(["cloudwatch:PutMetricData", "xray:PutTraceSegments", "xray:PutTelemetryRecords",
                "logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents", "logs:DescribeLogStreams", "logs:DescribeLogGroups"]),
     ]})
+    roles["api"] = _role(f"{PREFIX}-api", _trust("lambda.amazonaws.com", acct), {"Statement": [
+        _stmt(["dynamodb:PutItem", "dynamodb:GetItem", "dynamodb:Query", "dynamodb:Scan"], [tarn(n) for n in t.values()]),
+        _stmt(["s3:GetObject", "s3:PutObject"], f"arn:aws:s3:::{b}/*"),
+        _stmt(["cloudwatch:PutMetricData", "polly:SynthesizeSpeech", "bedrock:ApplyGuardrail", "bedrock:InvokeModel", "bedrock:Converse",
+               "bedrock:Retrieve", "bedrock-agentcore:InvokeAgentRuntime", "states:StartExecution", "states:ListExecutions"]),
+        _stmt(["sts:AssumeRole"], f"arn:aws:iam::{acct}:role/{PREFIX}-agent-*"),
+    ]}, ["arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"])
     roles["kb"] = _role(f"{PREFIX}-kb", _trust("bedrock.amazonaws.com", acct), {"Statement": [
         _stmt(["s3:GetObject", "s3:ListBucket"], [f"arn:aws:s3:::{b}", f"arn:aws:s3:::{b}/*"]),
         _stmt(["bedrock:InvokeModel"], f"arn:aws:bedrock:{REGION}::foundation-model/amazon.titan-embed-text-v2:0"),
@@ -211,7 +223,7 @@ def step_iam(st: dict) -> None:
     me = session().client("sts").get_caller_identity()["Arn"]
     caller_role = me.replace(":sts:", ":iam:").replace("assumed-role", "role").rsplit("/", 1)[0] if ":assumed-role/" in me else me
     agent_trust = json.dumps({"Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Action": "sts:AssumeRole",
-        "Principal": {"AWS": [f"arn:aws:iam::{acct}:root", f"arn:aws:iam::{acct}:role/{PREFIX}-runtime"]}}]})
+        "Principal": {"AWS": [f"arn:aws:iam::{acct}:root", f"arn:aws:iam::{acct}:role/{PREFIX}-runtime", f"arn:aws:iam::{acct}:role/{PREFIX}-api"]}}]})
     st["agentRoles"] = {}
     for a in ACTING_AGENTS:
         st["agentRoles"][a] = _role(f"{PREFIX}-agent-{a}", agent_trust, {"Statement": [
@@ -568,9 +580,53 @@ def step_runtime(st: dict) -> None:
         _say("", f"  ! {g.get('failureReason', '')}")
 
 
+WEB_ORIGINS = ["https://gcorp-alpha.vercel.app"]
+
+
+def step_api(st: dict) -> None:
+    """The engine's HTTP API on Lambda behind a public Function URL, for the deployed web app."""
+    deps = _deps("api-deps", ["fastapi", "mangum", "pydantic"], "mangum")
+    code = _zip_core(deps=deps, wards=True, keep={"api.py"})
+    key = f"code/api-{int(time.time())}.zip"
+    s = session()
+    s.client("s3").put_object(Bucket=st["bucket"], Key=key, Body=code)
+    lam = s.client("lambda")
+    fn = f"{PREFIX}-api"
+    keep = ("account", "region", "bucket", "tables", "guardrail", "gateway", "agentRoles", "kb", "stateMachine", "schedule",
+            "topic", "lambdas", "policyEngine", "runtime", "dashboard", "openaqParam")
+    cloud_state = {k: st[k] for k in keep if k in st}
+    env = {"GCORP_IN_CLOUD": "1", "GCORP_AWS_REGION": REGION, "GCORP_AWS_STATE_JSON": json.dumps(cloud_state),
+           "GCORP_CORS_ORIGINS": ",".join(WEB_ORIGINS), "GCORP_RUNS_DIR": "/tmp/runs", "GCORP_ARCHIVE": "sync"}
+    cfg = dict(Handler="gcorp.aws.handlers.http.handler", Role=st["roles"]["api"], Timeout=120, MemorySize=1536,
+               Environment={"Variables": env})
+    try:
+        lam.get_function(FunctionName=fn)
+        lam.update_function_code(FunctionName=fn, S3Bucket=st["bucket"], S3Key=key, Architectures=["arm64"])
+        lam.get_waiter("function_updated_v2").wait(FunctionName=fn)
+        _retry(lam.update_function_configuration, FunctionName=fn, on=("ResourceConflict", "in progress"), **cfg)
+    except lam.exceptions.ResourceNotFoundException:
+        _retry(lam.create_function, FunctionName=fn, Runtime="python3.13", Code={"S3Bucket": st["bucket"], "S3Key": key},
+               Architectures=["arm64"], Description="Gcorp engine HTTP API (FastAPI) for the web app", Tags=TAGS, **cfg)
+    lam.get_waiter("function_active_v2").wait(FunctionName=fn)
+    try:
+        url = lam.get_function_url_config(FunctionName=fn)["FunctionUrl"]
+    except lam.exceptions.ResourceNotFoundException:
+        url = lam.create_function_url_config(FunctionName=fn, AuthType="NONE", InvokeMode="BUFFERED")["FunctionUrl"]
+    for sid, action, extra in (("public-url", "lambda:InvokeFunctionUrl", {"FunctionUrlAuthType": "NONE"}),
+                               ("public-url-invoke", "lambda:InvokeFunction", {"InvokedViaFunctionUrl": True})):
+        try:
+            lam.add_permission(FunctionName=fn, StatementId=sid, Action=action, Principal="*", **extra)
+        except lam.exceptions.ResourceConflictException:
+            pass
+        except Exception as e:  # older API without InvokedViaFunctionUrl
+            _say("api", f"permission {sid}: {str(e)[:120]}")
+    st["api"] = {"function": fn, "url": url.rstrip("/"), "package": f"s3://{st['bucket']}/{key}"}
+    _say("api", f"{fn} · {url} · {len(code) // 1024 // 1024} MB")
+
+
 STEPS = {"core": step_core, "storage": step_storage, "secrets": step_secrets, "alerts": step_alerts, "iam": step_iam,
          "lambdas": step_lambdas, "watch": step_watch, "dashboard": step_dashboard, "guardrail": step_guardrail,
-         "kb": step_kb, "gateway": step_gateway, "policy": step_policy, "runtime": step_runtime}
+         "kb": step_kb, "gateway": step_gateway, "policy": step_policy, "runtime": step_runtime, "api": step_api}
 
 
 def up(only: list[str] | None = None, email: str | None = None) -> dict:
@@ -643,7 +699,7 @@ def down() -> None:
         quiet("state machine", s.client("stepfunctions").delete_state_machine, stateMachineArn=st["stateMachine"])
     quiet("dashboard", s.client("cloudwatch").delete_dashboards, DashboardNames=[PREFIX])
     lam = s.client("lambda")
-    for fn in ("tools", "ingest"):
+    for fn in ("tools", "ingest", "api"):
         quiet(f"lambda {PREFIX}-{fn}", lam.delete_function, FunctionName=f"{PREFIX}-{fn}")
     if st.get("topic"):
         quiet("sns topic", s.client("sns").delete_topic, TopicArn=st["topic"])
@@ -660,7 +716,7 @@ def down() -> None:
             pass
         quiet(f"bucket {st['bucket']}", s.client("s3").delete_bucket, Bucket=st["bucket"])
     iam = s.client("iam")
-    names = [f"{PREFIX}-{r}" for r in ("lambda", "states", "scheduler", "gateway", "runtime", "kb")] + [f"{PREFIX}-agent-{a}" for a in ACTING_AGENTS]
+    names = [f"{PREFIX}-{r}" for r in ("lambda", "states", "scheduler", "gateway", "runtime", "kb", "api")] + [f"{PREFIX}-agent-{a}" for a in ACTING_AGENTS]
     for n in names:
         try:
             for p in iam.list_attached_role_policies(RoleName=n)["AttachedPolicies"]:
