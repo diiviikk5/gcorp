@@ -104,9 +104,34 @@ web/src/
   components/      city (R3F), landing figures (iso-glow SVG), chamber, UI kit
 ```
 
-## AWS (next, not yet deployed)
+## AWS (live)
 
-Strands Agents for the council and verifier · Bedrock AgentCore Runtime hosting the orchestrator as one endpoint · Step Functions Map for scenario variants · Lambda + DynamoDB for the ledger. The engine already speaks the same contract, so the CLI and web switch over with one `endpoint` setting.
+`gcorp aws up` provisions everything with boto3 (idempotent; ids in `~/.gcorp/aws.json`), `gcorp aws status` shows it, `gcorp aws down --yes` removes it. Region `ap-southeast-2`. Nothing here is needed to run offline.
+
+| Service | What it does in Gcorp |
+|---|---|
+| **AgentCore Gateway** | The council's tools (ledger lookup/search, simulate, verify, propose a change, assess) as MCP tools, served by the `gcorp-tools` Lambda. IAM auth. |
+| **AgentCore Policy** | Role contracts in **Cedar**, enforced on the gateway. Every agent calls as its own IAM role, so Cedar can say *the Externalities analyst may move `regionalPct`; the Economist may not; only the planner may launch a run*. A model that overreaches is refused before the tool runs, and the refusal is recorded on the claim. |
+| **AgentCore Runtime** | The whole engine as a hosted agent (stdlib HTTP entrypoint). Runs come home and are re-simulated locally: the fingerprints match. |
+| **Bedrock Guardrails** | Contextual grounding on every accepted claim. The verifier checks that each figure has a source; the guardrail checks that the sentence says what the source says. Weakly grounded claims are marked in the brief. |
+| **Bedrock Knowledge Base** | Ledger rows and role contracts on **S3 Vectors** (no always-on vector DB). |
+| **Bedrock models** | Optional council backend (Amazon Nova 2 Lite by default, any Converse model). Drafts still go through the verifier and the Cedar gate; falls back to playbooks if the model is unavailable, per agent, on record. |
+| **Lambda + EventBridge Scheduler + Step Functions** | Hourly watch loop: ingest live air → where a zone crosses AQI 300, re-assess the watched policy there (Map, in parallel) → SNS alert (6 h cooldown) → DynamoDB. |
+| **DynamoDB, S3, SSM, SNS, CloudWatch, Polly** | Readings/runs/alerts; run archive and KB docs; the OpenAQ key as a SecureString; alerts; a dashboard with ≤8 custom metrics; spoken briefs (en-IN). |
+
+Live data: Open-Meteo's CAMS model for every zone (coarse, ~40 km) and OpenAQ measured PM2.5 where a station reading is under three hours old. Every reading says which it is.
+
+```bash
+gcorp aws up --email you@example.com   # provision; SNS sends a confirmation email
+gcorp aws gate                         # same tool, different agents: Cedar permit/deny
+gcorp aws readings                     # live Delhi AQI from DynamoDB
+gcorp aws invoke "Ban trucks from entering Anand Vihar at night"   # run on AgentCore Runtime
+gcorp aws watch --now                  # start the Step Functions loop now
+```
+
+In the web app: **AWS** page (services, Cedar test, live air, watch loop, KB search), a *Checked in AWS* section and per-claim grounding/Cedar marks in every brief, **Listen** (Polly), and *Run on AgentCore* / *Bedrock model* in New assessment.
+
+Cost on the Free plan: no NAT, no OpenSearch, no always-on compute; a $100 budget with alerts. Bedrock model quotas start at zero on new accounts; everything else works without them.
 
 ## Demo (90 seconds)
 
@@ -117,7 +142,8 @@ Strands Agents for the council and verifier · Bedrock AgentCore Runtime hosting
 5. Council House: convene the same policy and watch the agents walk it through the building.
 6. Street Lab: scrub to a calm night and watch the truck ban clear the NH-24 corridor downwind.
 7. Plan (goal → portfolio) and Track record (2/4 → 4/4, demo outcomes until replaced).
-8. Close: "What would you have done?"
+8. AWS: *Test the contracts* (AgentCore Policy refuses the economist), live Delhi air, the brief's *Checked in AWS* and **Listen**.
+9. Close: "What would you have done?"
 
 ## Credits
 
