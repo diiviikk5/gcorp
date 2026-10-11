@@ -15,6 +15,7 @@ submitting a claim). The Chamber view draws those.
 from __future__ import annotations
 
 import json
+import os
 import re
 import time
 from dataclasses import dataclass, field
@@ -27,7 +28,7 @@ from .rng import fnv1a
 from .scenario import Scenario
 from .simulator import simulate
 
-RUNS = Path(__file__).resolve().parent.parent / "runs"
+RUNS = Path(os.environ.get("GCORP_RUNS_DIR") or Path(__file__).resolve().parent.parent / "runs")
 ORDER = ["apportionment", "engineer", "epidemiologist", "economist", "externalities", "skeptic"]
 
 

@@ -28,6 +28,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from .tokens import Resolver
 from . import client
 
 # Paper-and-ink palette: ink for structure, one vermilion accent for what is live.
@@ -38,66 +39,6 @@ STAGES = ["scope", "simulate", "challenge", "verify", "decide"]
 DESKS = ["compiler", "simulator", "apportionment", "engineer", "epidemiologist", "economist", "externalities", "skeptic", "verifier", "writer"]
 
 console = Console(highlight=False, soft_wrap=False)
-
-
-# --------------------------------------------------------------------------- token rendering
-
-class Resolver:
-    """Renders [[L-011]] / [[sim:x]] / [[param:x]] / [[fp]] the way the web app does."""
-
-    def __init__(self, run: dict, ledger: dict[str, dict]):
-        self.run, self.ledger = run, ledger
-        self.round = 1
-        self.overrides: dict = {}
-
-    def sim(self) -> dict:
-        sims = self.run["sims"]
-        return sims.get(str(self.round)) or sims[max(sims, key=int)]
-
-    def value(self, ref: str) -> str:
-        if ref.startswith("L-"):
-            row = self.ledger.get(ref)
-            if not row:
-                return f"{ref}?"
-            v = row["value"]
-            try:
-                if (row.get("unit") or "").startswith("fraction"):
-                    return f"{float(v) * 100:.0f}%"
-            except ValueError:
-                pass
-            return v if len(v) < 22 else ref
-        if ref == "fp":
-            return self.sim()["fingerprint"]
-        if ref.startswith("param:"):
-            k = ref[6:]
-            p = self.run["scenario"]["params"].get(k, {})
-            v = self.overrides.get(k, p.get("value"))
-            if k == "durationDays" and isinstance(v, (int, float)):
-                return f"{round(v / 30)} months" if v >= 60 else f"{int(v)} days"
-            return f"{v:g}%" if p.get("unit") == "%" and isinstance(v, (int, float)) else str(v)
-        if ref.startswith("sim:"):
-            s = self.sim()["summary"]
-            k = ref[4:]
-            return {
-                "zoneBefore": f"{s['zoneBefore']:.0f}",
-                "zoneAfterRange": f"{s['zoneAfterLo']:.0f}–{s['zoneAfterHi']:.0f}",
-                "deltaRange": f"{s['deltaLo']:.0f}–{s['deltaHi']:.0f}",
-                "pctRange": f"{s['pctLo']:.1f}–{s['pctHi']:.1f}%",
-                "spillover": f"{-s['spillover']:+.1f} AQI",
-                "ceiling": f"{s.get('ceilingPct', 0):.1f}%",
-                "regional": f"{s.get('regionalPct', 0):.0f}%",
-            }.get(k, k)
-        return ref
-
-    def text(self, raw: str, style: str = "") -> Text:
-        out = Text(style=style)
-        pos = 0
-        for m in re.finditer(r"\[\[([^\]]+)\]\]", raw):
-            out.append(raw[pos:m.start()])
-            out.append(self.value(m.group(1)), style="underline")
-            pos = m.end()
-        out.append(raw[pos:])
-        return out
 
 
 # --------------------------------------------------------------------------- watch (TUI)
@@ -466,8 +407,13 @@ def main(argv: list[str] | None = None) -> int:
     c.add_argument("action", choices=["get", "set"])
     c.add_argument("key", nargs="?")
     c.add_argument("value", nargs="?")
+    from .aws.cli import add_parser as _aws_parser
+    _aws_parser(sub)
     args = p.parse_args(argv)
 
+    if args.cmd == "aws":
+        from .aws.cli import run as aws_run
+        return aws_run(args)
     if args.cmd == "serve":
         import uvicorn
         uvicorn.run("gcorp.api:app", host="127.0.0.1", port=args.port, log_level="info")

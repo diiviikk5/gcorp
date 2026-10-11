@@ -15,7 +15,21 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol
 
-import yaml
+try:
+    import yaml
+except ImportError:  # cloud runtimes ship without PyYAML; frontmatter is flat
+    yaml = None
+
+
+def _frontmatter(fm: str) -> dict:
+    if yaml:
+        return yaml.safe_load(fm)
+    out: dict = {}
+    for line in fm.strip().splitlines():
+        k, _, v = line.partition(":")
+        v = v.strip()
+        out[k.strip()] = [x.strip() for x in v[1:-1].split(",") if x.strip()] if v.startswith("[") else v
+    return out
 
 from ..city import ZONE_BY_ID
 from ..scenario import Scenario
@@ -30,7 +44,7 @@ def load_roles() -> dict[str, dict]:
     for f in sorted(ROLES_DIR.glob("*.md")):
         text = f.read_text(encoding="utf-8")
         _, fm, body = text.split("---", 2)
-        meta = yaml.safe_load(fm)
+        meta = _frontmatter(fm)
         out[meta["id"]] = {
             "name": meta["name"], "role": meta["question"], "model": meta.get("backend", "rules"),
             "tools": meta.get("tools", []), "mayChange": meta.get("may_change", []), "contract": body.strip(),

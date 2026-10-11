@@ -15,7 +15,10 @@ import os
 import time
 from pathlib import Path
 
-import httpx
+try:
+    import httpx
+except ImportError:  # cloud runtimes (Lambda, AgentCore) only read the cache
+    httpx = None
 
 CACHE = Path(__file__).parent / "data" / "cache"
 UA = {"User-Agent": "gcorp-hackathon/0.2 (air policy pre-check; contact via github.com/diiviikk5/gcorp)"}
