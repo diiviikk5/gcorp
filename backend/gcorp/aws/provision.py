@@ -343,7 +343,7 @@ def step_guardrail(st: dict) -> None:
     gid = next((g["id"] for g in b.list_guardrails()["guardrails"] if g["name"] == name), None)
     cfg = dict(
         description="Second check on accepted council claims: is the sentence supported by the sources it cites?",
-        contextualGroundingPolicyConfig={"filtersConfig": [{"type": "GROUNDING", "threshold": 0.6}, {"type": "RELEVANCE", "threshold": 0.4}]},
+        contextualGroundingPolicyConfig={"filtersConfig": [{"type": "GROUNDING", "threshold": 0.6}]},
         topicPolicyConfig={"topicsConfig": [{"name": "Individual medical advice", "type": "DENY",
             "definition": "Advice to a specific person about their own diagnosis, medication or treatment.",
             "examples": ["Should my son stop his inhaler?", "What dose of steroids should I take during smog?"]}]},
@@ -355,7 +355,7 @@ def step_guardrail(st: dict) -> None:
         gid = b.create_guardrail(name=name, tags=[{"key": k, "value": v} for k, v in TAGS.items()], **cfg)["guardrailId"]
     ver = b.create_guardrail_version(guardrailIdentifier=gid, description="gcorp aws up")["version"]
     st["guardrail"] = {"id": gid, "version": ver}
-    _say("guardrail", f"{name} v{ver} (contextual grounding ≥0.6, relevance ≥0.4)")
+    _say("guardrail", f"{name} v{ver} (contextual grounding ≥0.6)")
 
 
 def _kb_docs(st: dict) -> int:
@@ -454,29 +454,42 @@ def step_gateway(st: dict) -> None:
 
 
 def cedar_policies(st: dict) -> dict[str, str]:
-    """Role contracts as Cedar. Who may call which tool, and with which arguments."""
+    """Role contracts as Cedar: who may call which tool, with which arguments.
+
+    Agents call the gateway as their own IAM role (assumed per agent), so the Cedar
+    principal is an AgentCore::IamEntity whose id is that session's ARN.
+    """
     from ..council import AGENTS
     gw = st["gateway"]["arn"]
-    acct = st["account"]
     t = st["gateway"]["target"]
-    principal = lambda a: f'AgentCore::IamEntity::"arn:aws:iam::{acct}:role/{PREFIX}-agent-{a}"'
-    act = lambda tool: f'AgentCore::Action::"{t}___{tool}"'
-    res = f'AgentCore::Gateway::"{gw}"'
+    who = lambda a: f'(principal.id like "*/{PREFIX}-agent-{a}" || principal.id like "*/{PREFIX}-agent-{a}/*")'
+    council = f'(principal.id like "*/{PREFIX}-agent-*" || principal.id like "*:role/{PREFIX}-agent-*")'
+    head = lambda tool: (f'permit(principal is AgentCore::IamEntity, action == AgentCore::Action::"{t}___{tool}", '
+                         f'resource == AgentCore::Gateway::"{gw}")')
     out = {}
-    # Everyone on the council may read the ledger, run the simulator and submit claims to the verifier.
+    # Council members (and nobody else) may read the ledger, run the simulator and submit claims to the verifier.
     for tool in ("ledger_lookup", "ledger_search", "simulate", "verify_claim"):
-        out[f"read_{tool}"] = f"permit(principal, action == {act(tool)}, resource == {res});"
-    # Only the planner (a human in the loop) may launch a full assessment through the gateway.
-    out["assess_planner"] = f"permit(principal == {principal('planner')}, action == {act('assess')}, resource == {res});"
-    # param changes: each role only for the inputs its contract names.
+        out[f"read_{tool}"] = f"{head(tool)} when {{ {council} }};"
+    # Only the planner (the human in the loop) may launch a full assessment through the gateway.
+    out["assess_planner"] = f"{head('assess')} when {{ {who('planner')} }};"
+    # Parameter changes: each role only for the inputs its contract names.
     for aid, a in AGENTS.items():
         keys = a["mayChange"]
         if aid not in ACTING_AGENTS or not keys:
             continue
         allowed = " || ".join(f'context.input.key == "{k}"' for k in keys)
-        out[f"propose_{aid}"] = (f"permit(principal == {principal(aid)}, action == {act('propose_change')}, resource == {res}) "
-                                 f"when {{ context.input has key && ({allowed}) }};")
+        out[f"propose_{aid}"] = f"{head('propose_change')} when {{ {who(aid)} && context.input has key && ({allowed}) }};"
     return out
+
+
+def _policies(c, pid: str) -> list[dict]:
+    out, tok = [], None
+    while True:
+        r = c.list_policies(policyEngineId=pid, **({"nextToken": tok} if tok else {}))
+        out += r.get("policies", [])
+        tok = r.get("nextToken")
+        if not tok:
+            return out
 
 
 def step_policy(st: dict) -> None:
@@ -489,10 +502,19 @@ def step_policy(st: dict) -> None:
         if p["status"] in ("ACTIVE", "READY", "FAILED", "CREATE_FAILED"):
             break
         time.sleep(3)
-    existing = {x["name"]: x for x in c.list_policies(policyEngineId=pid).get("policies", [])}
+    existing = {x["name"]: x for x in _policies(c, pid)}
     made, failed = 0, []
-    for pname, stmt in cedar_policies(st).items():
+    wanted = cedar_policies(st)
+    for pname, x in list(existing.items()):
+        if pname not in wanted:  # stale or probe policies
+            c.delete_policy(policyEngineId=pid, policyId=x["policyId"])
+            existing.pop(pname)
+    for pname, stmt in wanted.items():
         try:
+            if pname in existing and existing[pname].get("status", "").endswith("FAILED"):
+                c.delete_policy(policyEngineId=pid, policyId=existing[pname]["policyId"])
+                time.sleep(3)
+                existing.pop(pname)
             if pname in existing:
                 c.update_policy(policyEngineId=pid, policyId=existing[pname]["policyId"], definition={"cedar": {"statement": stmt}})
             else:
@@ -599,7 +621,7 @@ def down() -> None:
     if st.get("policyEngine"):
         pid = st["policyEngine"]["id"]
         try:
-            for p in c.list_policies(policyEngineId=pid).get("policies", []):
+            for p in _policies(c, pid):
                 quiet(f"policy {p['name']}", c.delete_policy, policyEngineId=pid, policyId=p["policyId"])
             time.sleep(5)
         except Exception:

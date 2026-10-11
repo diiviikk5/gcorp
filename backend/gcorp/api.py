@@ -61,7 +61,7 @@ async def _idle() -> None:
 @app.on_event("startup")
 def _seed() -> None:
     for text, zone, kind, created, observed in SEEDS:
-        r = execute(text, zone, kind=kind, created_at=created)
+        r = execute(text, zone, kind=kind, created_at=created, cloud=False)
         r.observed = observed
         RUNS[r.id] = r
 
@@ -71,6 +71,8 @@ class RunIn(BaseModel):
     zoneId: str | None = None
     overrides: dict[str, float | str] | None = None
     kind: str = "assessment"
+    backend: str = "rules"   # rules | bedrock
+    host: str = "local"      # local | agentcore
 
 
 class InterjectIn(BaseModel):
@@ -109,7 +111,15 @@ def compile_(body: RunIn) -> dict:
 
 @app.post("/api/runs")
 def create_run(body: RunIn) -> dict:
-    r = execute(body.text, body.zoneId, body.overrides, kind=body.kind)
+    if body.host == "agentcore":
+        from .aws.bridge import run_on_agentcore
+        r = run_on_agentcore(body.text, body.zoneId, body.overrides, body.backend)
+    else:
+        backend = None
+        if body.backend == "bedrock":
+            from .council.bedrock import BedrockBackend
+            backend = BedrockBackend()
+        r = execute(body.text, body.zoneId, body.overrides, kind=body.kind, backend=backend)
     RUNS[r.id] = r
     return r.to_json()
 
@@ -224,3 +234,11 @@ def weather() -> dict:
         raise HTTPException(404, "No weather cached; run `gcorp data pull`")
     h = w["hourly"]
     return {"row": w["row"], "time": h["time"], "windSpeed": h["wind_speed_10m"], "windDir": h["wind_direction_10m"], "blh": h["boundary_layer_height"]}
+
+
+# --------------------------------------------------------------------------- AWS
+
+from .aws import api as _aws_api  # noqa: E402
+
+app.include_router(_aws_api.router)
+_aws_api.RUNS = RUNS

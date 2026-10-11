@@ -76,13 +76,14 @@ class BedrockBackend:
             raw = r["output"]["message"]["content"][0]["text"]
             data = json.loads(raw[raw.find("{"): raw.rfind("}") + 1])
             out = []
-            allowed = set(AGENTS[agent]["mayChange"])
             for d in data.get("drafts", [])[:2]:
                 text = str(d.get("text", "")).strip()
                 if not text:
                     continue
                 cited = [t for t in TOKEN.findall(text) if t.startswith("L-")]
-                changes = {k: v for k, v in (d.get("changes") or {}).items() if k in allowed}
+                # Not filtered here on purpose: an out-of-contract proposal is refused by AgentCore
+                # Policy (cloud) or the local contract check (offline), and the refusal is on record.
+                changes = dict(d.get("changes") or {})
                 out.append(Draft(agent, text, list(dict.fromkeys(list(d.get("lookups") or []) + cited)),
                                  scope="zone" if d.get("scope") == "zone" else "city", changes=changes))
             self.used[agent] = "bedrock"

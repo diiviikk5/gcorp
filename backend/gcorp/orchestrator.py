@@ -43,6 +43,7 @@ class Run:
     sims: dict[int, dict] = field(default_factory=dict)
     overrides: dict[str, float | str] = field(default_factory=dict)
     observed: dict | None = None
+    cloud: dict | None = None  # which AWS checks ran (gateway, guardrail, archive, backends)
     t: int = 0
     msg_n: int = 0
 
@@ -60,7 +61,7 @@ class Run:
             "scenario": self.scenario.to_json(), "events": self.events, "claims": self.claims,
             "sims": {str(k): v if grids else {kk: vv for kk, vv in v.items() if kk not in ("before", "afterLo", "afterHi", "uncertainty")} for k, v in self.sims.items()},
             "finalOverrides": self.overrides, "duration": self.duration, "observed": self.observed,
-            "confidence": confidence(self) if self.sims else None,
+            "confidence": confidence(self) if self.sims else None, "cloud": self.cloud,
         }
 
 
@@ -109,7 +110,36 @@ def _sim(run: Run, rec: Recorder, agent: str = "simulator") -> dict:
     return res
 
 
-def _debate(run: Run, rec: Recorder, drafts: list[Draft]) -> dict[str, float | str]:
+def _cloud(flag: bool | None):
+    """The AWS bridge when `gcorp aws up` has run (never from inside AWS itself)."""
+    if flag is False:
+        return None
+    try:
+        from .aws import IN_CLOUD, enabled
+        if IN_CLOUD or not enabled():
+            return None
+        from .aws import cloud
+        return cloud
+    except Exception:  # boto3 missing, no credentials: run offline
+        return None
+
+
+def _gate(cloud, run: Run, rec: Recorder, agent: str, cid: str, key: str, val) -> bool:
+    """Ask AgentCore Policy (Cedar) whether this agent may move this input. Offline: the local contract."""
+    local = key in AGENTS[agent]["mayChange"]
+    if cloud is None or not cloud.state().get("gateway"):
+        return local
+    r = cloud.call_tool(agent, "propose_change", {"key": key, "value": str(val), "agent": agent})
+    decision = "permit" if r.get("ok") else "deny" if r.get("denied") else "error"
+    run.claims[cid]["gate"] = {"engine": "AgentCore Policy (Cedar)", "decision": decision, "agent": agent, "key": key,
+                               **({"error": str(r.get("error"))[:200]} if decision == "error" else {})}
+    rec.action(agent, "param.propose", key, f"AgentCore Policy: {decision}" + ("" if decision != "deny" else " (outside this role's contract)"), dt=300)
+    if decision == "error":
+        return local  # the gateway is down: fall back to the local copy of the contract
+    return decision == "permit" and local
+
+
+def _debate(run: Run, rec: Recorder, drafts: list[Draft], cloud=None) -> dict[str, float | str]:
     changes: dict[str, float | str] = {}
     for d in drafts:
         for ref in d.lookups:
@@ -136,7 +166,7 @@ def _debate(run: Run, rec: Recorder, drafts: list[Draft]) -> dict[str, float | s
         rec.emit(900, **ev)
         if v.status == "accepted" and d.changes:
             for k, val in d.changes.items():
-                if k not in AGENTS[d.agent]["mayChange"]:
+                if not _gate(cloud, run, rec, d.agent, cid, k, val):
                     continue  # the role's contract does not let it move this input
                 frm = run.current.value(k)
                 rec.action(d.agent, "param.propose", k, f"{frm} → {val}", dt=250)
@@ -214,9 +244,22 @@ def _write(run: Run, name: str, data) -> None:
     p.write_text(data if isinstance(data, str) else json.dumps(data, indent=1, ensure_ascii=False), encoding="utf-8")
 
 
+def _ground(cloud, run: Run) -> None:
+    """Bedrock Guardrails contextual grounding on every accepted claim (a second, semantic check)."""
+    from concurrent.futures import ThreadPoolExecutor
+    acc = [c for c in run.claims.values() if c["status"] == "accepted"]
+    if not acc or not cloud.state().get("guardrail"):
+        return
+    with ThreadPoolExecutor(max_workers=6) as ex:
+        for c, g in zip(acc, ex.map(lambda c: cloud.ground_claim(run, c), acc)):
+            c["grounding"] = g
+
+
 def execute(text: str, zone_id: str | None = None, overrides: dict | None = None, kind: str = "assessment",
-            run_id: str | None = None, created_at: str | None = None, backend=None) -> Run:
+            run_id: str | None = None, created_at: str | None = None, backend=None, cloud: bool | None = None) -> Run:
+    """`cloud=None` uses AWS when provisioned; False keeps the run local (seed data, tests)."""
     backend = backend or RuleBackend()
+    aws = _cloud(cloud)
     sc = compile_policy(text, zone_id, overrides)
     rid = run_id or f"r-{fnv1a(sc.fingerprint + str(time.time()))[:6]}"
     sc.id = rid
@@ -247,7 +290,7 @@ def execute(text: str, zone_id: str | None = None, overrides: dict | None = None
     rec.stage("verify", "start", 50)
     ctx = Context(run.current, simulate(run.current))
     drafts = [d for a in ORDER for d in backend.drafts(a, ctx)]
-    changes = _debate(run, rec, drafts)
+    changes = _debate(run, rec, drafts, aws)
     _write(run, "objections.md", "\n".join(f"- {AGENTS[d.agent]['name']}: {d.text}" + (f" (changes {d.changes})" if d.changes else "") for d in drafts) + "\n")
     rec.stage("challenge", "done", 400)
     if changes and not blocked:
@@ -255,6 +298,10 @@ def execute(text: str, zone_id: str | None = None, overrides: dict | None = None
         rec.message("simulator", "Round 2 with accepted objections · fingerprint [[fp]]. Zone mean now [[sim:zoneAfterRange]]. Spillover to neighbours [[sim:spillover]].", dt=900, focus=zone_focus(sc, (0, 0)))
     else:
         run.sims[2] = {**run.sims[1], "round": 2}
+    if aws is not None:
+        _ground(aws, run)
+        run.cloud = {"gateway": bool(aws.state().get("gateway")), "guardrail": bool(aws.state().get("guardrail")),
+                     "backends": getattr(backend, "used", None) or {"*": "rules"}}
     _write(run, "claims.json", run.claims)
     rec.stage("verify", "done", 350)
 
@@ -266,7 +313,17 @@ def execute(text: str, zone_id: str | None = None, overrides: dict | None = None
     rec.stage("decide", "done", 600)
     rec.emit(300, type="complete")
     _write(run, "events.json", run.events)
+    if aws is not None:
+        import threading
+        threading.Thread(target=_archive, args=(aws, run), daemon=True).start()
     return run
+
+
+def _archive(cloud, run: Run) -> None:
+    try:
+        run.cloud["archive"] = cloud.archive(run)
+    except Exception as e:  # best effort; the run is already on disk
+        run.cloud["archive"] = {"ok": False, "error": f"{type(e).__name__}: {str(e)[:160]}"}
 
 
 # --------------------------------------------------------------------------- interjections
