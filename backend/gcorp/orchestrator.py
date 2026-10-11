@@ -111,12 +111,12 @@ def _sim(run: Run, rec: Recorder, agent: str = "simulator") -> dict:
 
 
 def _cloud(flag: bool | None):
-    """The AWS bridge when `gcorp aws up` has run (never from inside AWS itself)."""
+    """The AWS bridge when `gcorp aws up` has run (or inside AgentCore Runtime, which is handed the ids)."""
     if flag is False:
         return None
     try:
-        from .aws import IN_CLOUD, enabled
-        if IN_CLOUD or not enabled():
+        from .aws import enabled
+        if not enabled():
             return None
         from .aws import cloud
         return cloud
@@ -313,7 +313,8 @@ def execute(text: str, zone_id: str | None = None, overrides: dict | None = None
     rec.stage("decide", "done", 600)
     rec.emit(300, type="complete")
     _write(run, "events.json", run.events)
-    if aws is not None:
+    from .aws import IN_CLOUD
+    if aws is not None and not IN_CLOUD:  # the runtime archives its own runs
         import threading
         threading.Thread(target=_archive, args=(aws, run), daemon=True).start()
     return run

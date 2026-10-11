@@ -1,4 +1,6 @@
-import { useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { Segmented } from "@/components/ui/Segmented";
+import { api } from "@/lib/api";
 import { useNavigate, useSearchParams } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { AlertTriangle, ArrowLeft, ArrowRight, Ban, Check, Cpu, Info, MapPin, Sparkles, Wand2 } from "lucide-react";
@@ -51,6 +53,11 @@ export default function NewAssessment() {
   const [text, setText] = useState("");
   const [overrides, setOverrides] = useState<Partial<Record<ParamKey, number>>>({});
   const [ack, setAck] = useState(false);
+  const [aws, setAws] = useState(false);
+  const [host, setHost] = useState<"local" | "agentcore">("local");
+  const [backend, setBackend] = useState<"rules" | "bedrock">("rules");
+  const [launchError, setLaunchError] = useState<string | null>(null);
+  useEffect(() => { if (engine === "online") api.aws.status().then((s) => setAws(s.enabled)).catch(() => {}); }, [engine]);
   const deferred = useDeferredValue(text);
   const { base, unc } = getCity();
   const field = useMemo(() => ({ before: base, afterLo: base, afterHi: base, unc }), [base, unc]);
@@ -68,8 +75,10 @@ export default function NewAssessment() {
     if (!scenario) return;
     if (engine === "online") {
       setLaunching(true);
-      createRemote(text, zone === "all" ? undefined : zone, overrides)
+      setLaunchError(null);
+      createRemote(text, zone === "all" ? undefined : zone, overrides, aws ? { host, backend } : undefined)
         .then((id) => navigate(`/app/runs/${id}?live=1`))
+        .catch((e) => setLaunchError(String(e.message ?? e)))
         .finally(() => setLaunching(false));
       return;
     }
@@ -187,6 +196,20 @@ export default function NewAssessment() {
                     I understand the output is an <span className="text-fg">estimate under stated assumptions</span>, given as a range, not a forecast. Unsourced claims will surface as open questions rather than appear in the brief.
                   </span>
                 </label>
+                {aws && (
+                  <div className="mt-4 grid gap-3 rounded-xl p-4 text-[13px] ring-1 ring-inset ring-line sm:grid-cols-2">
+                    <div>
+                      <div className="mb-1.5 text-mute">Run on</div>
+                      <Segmented size="md" value={host} onChange={setHost} options={[{ value: "local", label: "This machine" }, { value: "agentcore", label: "AgentCore Runtime" }]} />
+                    </div>
+                    <div>
+                      <div className="mb-1.5 text-mute">Council drafts with</div>
+                      <Segmented size="md" value={backend} onChange={setBackend} options={[{ value: "rules", label: "Playbooks" }, { value: "bedrock", label: "Bedrock model", title: "Amazon Nova 2 Lite; falls back to playbooks if the model is unavailable" }]} />
+                    </div>
+                    <p className="text-[12px] text-faint sm:col-span-2">Either way, contracts are enforced by AgentCore Policy and accepted claims are grounded by Bedrock Guardrails.</p>
+                  </div>
+                )}
+                {launchError && <p className="mt-3 text-[12.5px] text-[var(--color-accent)]">{launchError}</p>}
               </motion.div>
             )}
           </AnimatePresence>

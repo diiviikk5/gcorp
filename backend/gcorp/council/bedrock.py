@@ -1,4 +1,4 @@
-"""Claude on Amazon Bedrock as a council backend.
+"""A Bedrock model (Amazon Nova 2 Lite by default; any Converse model works) as a council backend.
 
 Same `drafts(agent, ctx)` contract as RuleBackend. The model gets the agent's role
 contract, the scenario, the simulator's summary and the ledger index (ids + labels,
@@ -17,7 +17,7 @@ import re
 
 from . import AGENTS, Context, Draft, RuleBackend
 
-MODEL = os.environ.get("GCORP_BEDROCK_MODEL", "au.anthropic.claude-haiku-5-5")
+MODEL = os.environ.get("GCORP_BEDROCK_MODEL", "global.amazon.nova-2-lite-v1:0")
 TOKEN = re.compile(r"\[\[([^\]]+)\]\]")
 
 RULES = """You are one member of a council that pre-checks city air-quality policies for Delhi.

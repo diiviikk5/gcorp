@@ -17,6 +17,7 @@ const Plan = lazy(() => import("./pages/app/Plan"));
 const Prove = lazy(() => import("./pages/app/Prove"));
 const Breathe = lazy(() => import("./pages/app/Breathe"));
 const StreetLab = lazy(() => import("./pages/app/StreetLab"));
+const Cloud = lazy(() => import("./pages/app/Cloud"));
 
 const Fallback = () => <div className="grid h-full min-h-[40vh] place-items-center"><div className="size-5 animate-spin rounded-full border-2 border-black/10 border-t-brand" /></div>;
 const S = (el: React.ReactNode) => <Suspense fallback={<Fallback />}>{el}</Suspense>;
@@ -39,6 +40,7 @@ const router = createBrowserRouter([
       { path: "track-record", element: S(<Prove />) },
       { path: "breathe", element: S(<Breathe />) },
       { path: "lab", element: S(<StreetLab />) },
+      { path: "aws", element: S(<Cloud />) },
     ],
   },
 ]);

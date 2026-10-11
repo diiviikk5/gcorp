@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
-import { BadgeCheck, BookOpenCheck, Building2, Columns3, FlaskConical, LayoutGrid, ListChecks, Plus, Search, Target, Wind } from "lucide-react";
+import { BadgeCheck, BookOpenCheck, Building2, Cloud, Columns3, FlaskConical, LayoutGrid, ListChecks, Plus, Search, Target, Wind } from "lucide-react";
 import { useEffect } from "react";
 import { cn } from "@/lib/cn";
 import { useRunList, useRuns } from "@/store/runs";
@@ -18,6 +18,7 @@ const NAV = [
   { to: "/app/track-record", label: "Track record", icon: BadgeCheck },
   { to: "/app/breathe", label: "Breathe", icon: Wind },
   { to: "/app/ledger", label: "Source ledger", icon: BookOpenCheck },
+  { to: "/app/aws", label: "AWS", icon: Cloud },
 ];
 
 export function AppLayout() {

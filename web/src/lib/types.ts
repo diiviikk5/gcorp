@@ -152,6 +152,10 @@ export interface Claim {
   rule?: string;
   scope?: string;
   changes?: { key: ParamKey; from: number | string; to: number | string };
+  /** Bedrock Guardrails contextual grounding (AWS mode): does the sentence say what its sources say? */
+  grounding?: { ok: boolean; action?: string; scores?: { grounding?: { score: number; threshold: number; action: string } }; error?: string };
+  /** AgentCore Policy (Cedar) decision on this claim's parameter change (AWS mode). */
+  gate?: { engine: string; decision: "permit" | "deny" | "error"; agent: string; key: string; error?: string };
 }
 
 export type RunEvent =

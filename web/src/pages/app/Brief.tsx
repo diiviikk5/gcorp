@@ -1,8 +1,8 @@
 import { Link, useParams } from "react-router";
-import { ArrowLeft, Link2, Printer } from "lucide-react";
+import { ArrowLeft, Link2, Printer, Volume2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { HourlyBars } from "@/components/ui/Hourly";
-import { api, type SensorAdvice } from "@/lib/api";
+import { api, type RunCloud, type SensorAdvice } from "@/lib/api";
 import { zoneById } from "@/sim/city";
 import { PageHeader } from "@/components/app/AppLayout";
 import { Button } from "@/components/ui/Button";
@@ -12,7 +12,7 @@ import { finalSim, useRun } from "@/store/runs";
 import { recommend } from "@/lib/recommend";
 import { AGENTS } from "@/sim/council";
 import { paramDisplay } from "@/lib/refs";
-import type { ParamKey } from "@/lib/types";
+import type { Claim, ParamKey } from "@/lib/types";
 import { fmt } from "@/lib/aqi";
 import { cn } from "@/lib/cn";
 
@@ -62,6 +62,7 @@ export default function Brief() {
             <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard?.writeText(location.href); setCopied(true); setTimeout(() => setCopied(false), 1400); }}>
               <Link2 className="size-3.5" /> {copied ? "Copied" : "Copy link"}
             </Button>
+            {b.remote && <Listen runId={rec.id} />}
             <Button size="sm" variant="secondary" onClick={() => window.print()}><Printer className="size-3.5" /> Print</Button>
           </>
         }
@@ -129,12 +130,17 @@ export default function Brief() {
           </Section>
         )}
 
+        {b.cloud && <CloudChecks cloud={b.cloud} claims={accepted} />}
+
         <Section title="Findings (accepted claims only)">
           <ul className="space-y-3">
             {accepted.map((c) => (
               <li key={c.id} className="grid grid-cols-[110px_1fr] gap-3 text-[14px] leading-relaxed">
                 <span className="text-mute">{AGENTS[c.agent].name}</span>
-                <RichText text={c.text} ctx={ctx} runId={rec.id} />
+                <span>
+                  <RichText text={c.text} ctx={ctx} runId={rec.id} />
+                  <CloudMarks claim={c} />
+                </span>
               </li>
             ))}
           </ul>
@@ -188,3 +194,59 @@ export default function Brief() {
     </div>
   );
 }
+
+
+function CloudMarks({ claim }: { claim: Claim }) {
+  const g = claim.grounding?.scores?.grounding;
+  if (!g && !claim.gate) return null;
+  return (
+    <span className="mt-1 flex flex-wrap gap-x-3 font-mono text-[11px] text-faint">
+      {g && <span className={cn(g.score < g.threshold && "text-[var(--color-accent)]")} title="Bedrock Guardrails contextual grounding against the cited rows">
+        {g.score < g.threshold ? "weakly grounded" : "grounded"} {g.score.toFixed(2)}
+      </span>}
+      {claim.gate && <span className={cn(claim.gate.decision !== "permit" && "text-[var(--color-accent)]")} title={claim.gate.engine}>
+        cedar: {claim.gate.decision} {claim.gate.key}
+      </span>}
+    </span>
+  );
+}
+
+function CloudChecks({ cloud, claims }: { cloud: RunCloud; claims: Claim[] }) {
+  const graded = claims.filter((c) => c.grounding?.scores?.grounding);
+  const weak = graded.filter((c) => c.grounding!.scores!.grounding!.score < c.grounding!.scores!.grounding!.threshold);
+  const gates = claims.filter((c) => c.gate);
+  const lines: string[] = [];
+  if (cloud.host) lines.push(`Ran on AgentCore Runtime in ${cloud.host.seconds}s${cloud.fingerprintsMatch ? "; re-simulated here, fingerprints match" : ""}.`);
+  if (gates.length) lines.push(`${gates.length} parameter change${gates.length > 1 ? "s" : ""} decided by AgentCore Policy (Cedar): ${gates.filter((c) => c.gate!.decision === "permit").length} permitted.`);
+  if (graded.length) lines.push(`Bedrock Guardrails grounding: ${graded.length - weak.length} of ${graded.length} accepted claims say what their sources say` + (weak.length ? `; ${weak.length} marked weakly grounded below.` : "."));
+  const back = cloud.host?.backends ?? cloud.backends;
+  if (back && Object.values(back).some((v) => v === "bedrock")) lines.push("Drafted by a Bedrock model; every claim still passed the verifier.");
+  if (!lines.length) return null;
+  return (
+    <Section title="Checked in AWS">
+      <ul className="space-y-1.5 text-[14px] leading-relaxed">{lines.map((l) => <li key={l}>· {l}</li>)}</ul>
+    </Section>
+  );
+}
+
+function Listen({ runId }: { runId: string }) {
+  const [state, setState] = useState<"idle" | "loading" | "playing" | "off">("idle");
+  const [audio] = useState(() => (typeof Audio !== "undefined" ? new Audio() : null));
+  useEffect(() => () => audio?.pause(), [audio]);
+  if (state === "off" || !audio) return null;
+  const play = () => {
+    if (state === "playing") { audio.pause(); setState("idle"); return; }
+    setState("loading");
+    audio.src = api.aws.audioUrl(runId);
+    audio.onplaying = () => setState("playing");
+    audio.onended = () => setState("idle");
+    audio.onerror = () => setState("off");
+    audio.play().catch(() => setState("off"));
+  };
+  return (
+    <Button size="sm" variant="ghost" onClick={play} title="Spoken brief (Amazon Polly, en-IN)">
+      <Volume2 className="size-3.5" /> {state === "loading" ? "Preparing…" : state === "playing" ? "Stop" : "Listen"}
+    </Button>
+  );
+}
+

@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useMemo } from "react";
 import type { ParamKey, RunRecord, Scenario, SimResult, SimSummary } from "@/lib/types";
-import { api, type BackendRun, type BackendSim, type Confidence } from "@/lib/api";
+import { api, type BackendRun, type BackendSim, type Confidence, type RunCloud } from "@/lib/api";
 import { registerRemoteRows } from "@/data/ledger";
 import { compile } from "@/sim/compiler";
 import { buildScript, type Script } from "@/sim/council";
@@ -21,7 +21,7 @@ interface RunsState {
   remoteOrder: string[];
   connect: () => Promise<void>;
   createRun: (scenario: Scenario, kind?: RunRecord["kind"]) => string;
-  createRemote: (text: string, zoneId?: string, overrides?: Record<string, number | string>) => Promise<string>;
+  createRemote: (text: string, zoneId?: string, overrides?: Record<string, number | string>, opts?: { backend?: "rules" | "bedrock"; host?: "local" | "agentcore" }) => Promise<string>;
   interject: (id: string, text: string) => Promise<void>;
   removeRun: (id: string) => void;
 }
@@ -64,8 +64,8 @@ export const useRuns = create<RunsState>()(
         set({ runs: [rec, ...get().runs] });
         return id;
       },
-      createRemote: async (text, zoneId, overrides) => {
-        const r = await api.create({ text, zoneId, overrides });
+      createRemote: async (text, zoneId, overrides, opts) => {
+        const r = await api.create({ text, zoneId, overrides, ...opts });
         set({ remote: { ...get().remote, [r.id]: r }, remoteOrder: [r.id, ...get().remoteOrder] });
         return r.id;
       },
@@ -102,6 +102,7 @@ export interface RunBundle {
   finalScenario: Scenario;
   remote: boolean;
   confidence?: Confidence | null;
+  cloud?: RunCloud | null;
 }
 
 const cache = new Map<string, RunBundle>();
@@ -127,7 +128,7 @@ function adapt(r: BackendRun): RunBundle {
   const sims: Record<number, SimResult> = {};
   for (const [k, v] of Object.entries(r.sims)) sims[Number(k)] = adaptSim(v);
   const script: Script = { events: r.events, claims: r.claims, finalOverrides: r.finalOverrides as Partial<Record<ParamKey, number>>, duration: r.duration };
-  return { record: toRecord(r), script, sims, finalScenario: withOverrides(r.scenario, r.finalOverrides as Partial<Record<ParamKey, number | string>>), remote: true, confidence: r.confidence };
+  return { record: toRecord(r), script, sims, finalScenario: withOverrides(r.scenario, r.finalOverrides as Partial<Record<ParamKey, number | string>>), remote: true, confidence: r.confidence, cloud: r.cloud };
 }
 
 export function getBundle(record: RunRecord, remote?: BackendRun): RunBundle {

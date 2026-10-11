@@ -196,6 +196,7 @@ def step_iam(st: dict) -> None:
     ]})
     roles["runtime"] = _role(f"{PREFIX}-runtime", _trust("bedrock-agentcore.amazonaws.com", acct), {"Statement": [
         _stmt(["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream", "bedrock:Converse", "bedrock:ApplyGuardrail"]),
+        _stmt(["sts:AssumeRole"], f"arn:aws:iam::{acct}:role/{PREFIX}-agent-*"),
         _stmt(["dynamodb:PutItem"], tarn(t["runs"])),
         _stmt(["s3:PutObject", "s3:GetObject"], f"arn:aws:s3:::{b}/*"),
         _stmt(["cloudwatch:PutMetricData", "xray:PutTraceSegments", "xray:PutTelemetryRecords",
@@ -536,7 +537,7 @@ def step_policy(st: dict) -> None:
 
 def step_runtime(st: dict) -> None:
     deps = _runtime_deps()
-    cloud_state = {k: st[k] for k in ("account", "region", "bucket", "tables", "guardrail") if k in st}
+    cloud_state = {k: st[k] for k in ("account", "region", "bucket", "tables", "guardrail", "gateway", "agentRoles") if k in st}
     main = b"from gcorp.aws.handlers.runtime import main\n\nif __name__ == '__main__':\n    main()\n"
     code = _zip_core({"main.py": main}, deps)
     s3 = session().client("s3")
